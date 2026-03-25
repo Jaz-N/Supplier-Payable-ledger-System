@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Payments – MPCS Payables</title>
+<style>
+/* shared.css — Corporate Blue Theme — MPCS Payables System */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@700&display=swap');
+
+:root {
+  --blue-900: #0a1628;
+  --blue-800: #0d2244;
+  --blue-700: #103060;
+  --blue-600: #1a4a8a;
+  --blue-500: #1f5aaa;
+  --blue-400: #3a7bd5;
+  --blue-300: #6aa3e8;
+  --blue-100: #ddeeff;
+  --blue-50:  #f0f6ff;
+
+  --gold:     #c8941a;
+  --gold-lt:  #f5e6c0;
+
+  --bg:       #f2f5fa;
+  --surface:  #ffffff;
+  --border:   #d0dae8;
+  --text:     #12243a;
+  --muted:    #5a6e85;
+
+  --red:      #c0392b;
+  --red-lt:   #fdecea;
+  --green:    #1a6b3c;
+  --green-lt: #e3f5ea;
+  --amber:    #b45309;
+  --amber-lt: #fef3c7;
+
+  --shadow-sm: 0 1px 4px rgba(10,22,40,0.08);
+  --shadow:    0 3px 12px rgba(10,22,40,0.10);
+  --shadow-lg: 0 8px 32px rgba(10,22,40,0.14);
+
+  --radius:   8px;
+  --radius-sm: 5px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: linear-gradient(135deg, var(--blue-900) 0%, var(--blue-800) 60%, var(--blue-700) 100%);
+  box-shadow: var(--shadow-lg);
+  position: sticky; top: 0; z-index: 100;
+}
+.header-inner {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.logo-box {
+  width: 52px; height: 52px;
+  border-radius: var(--radius);
+  background: var(--blue-600);
+  border: 2px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 15px; font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+.brand-text h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px; font-weight: 700;
+  color: #ffffff; line-height: 1.2;
+  letter-spacing: 0.2px;
+}
+.brand-text p { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 2px; }
+.header-right {
+  margin-left: auto; text-align: right;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.system-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.2px; color: var(--gold);
+}
+.today-date { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+/* ── NAV ── */
+.main-nav { background: var(--blue-800); padding: 0 20px; }
+.nav-inner { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.nav-inner::-webkit-scrollbar { display: none; }
+.nav-link {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 16px;
+  text-decoration: none;
+  color: rgba(255,255,255,0.6);
+  font-size: 13px; font-weight: 700;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.nav-link:hover { color: rgba(255,255,255,0.9); }
+.nav-link.active { color: #fff; border-bottom-color: var(--gold); }
+.nav-icon { font-size: 14px; }
+
+/* ── PAGE SHELL ── */
+.page-wrap { padding: 24px 28px; max-width: 1200px; }
+.page-title {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 20px;
+}
+.page-title h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; color: var(--blue-700);
+}
+.page-title .title-line {
+  flex: 1; height: 2px;
+  background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+}
+.card-title {
+  font-size: 12px; font-weight: 900;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--blue-600); margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--blue-50);
+}
+
+/* ── STAT CARDS ── */
+.stat-row { display: flex; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
+.stat-card {
+  flex: 1; min-width: 160px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  border-top: 4px solid var(--blue-500);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.stat-card.red   { border-top-color: var(--red); }
+.stat-card.gold  { border-top-color: var(--gold); }
+.stat-card.green { border-top-color: var(--green); }
+.stat-card.blue  { border-top-color: var(--blue-400); }
+.stat-card p  { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 6px; }
+.stat-card h3 { font-size: 22px; font-weight: 900; color: var(--text); }
+.stat-card h3.red   { color: var(--red); }
+.stat-card h3.blue  { color: var(--blue-600); }
+.stat-card h3.green { color: var(--green); }
+.stat-card h3.gold  { color: var(--amber); }
+
+/* ── FORM ── */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 14px 18px;
+}
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label {
+  font-size: 11px; font-weight: 900;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  color: var(--muted);
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 11px;
+  font-family: 'Lato', sans-serif;
+  font-size: 13px; color: var(--text);
+  background: var(--blue-50);
+  transition: border 0.15s, box-shadow 0.15s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--blue-400);
+  box-shadow: 0 0 0 3px rgba(31,90,170,0.12);
+  background: #fff;
+}
+.full { grid-column: 1 / -1; }
+
+/* conditional block */
+.cond-block {
+  display: none;
+  background: var(--blue-50);
+  border: 1px solid var(--blue-100);
+  border-radius: var(--radius);
+  padding: 14px; margin-top: 12px;
+}
+.cond-block.show { display: block; }
+.cond-block .card-title { color: var(--blue-500); }
+
+/* summary info box */
+.info-box {
+  display: none;
+  background: linear-gradient(135deg, var(--blue-50), #e8f0fb);
+  border: 1px solid var(--blue-100);
+  border-left: 4px solid var(--blue-500);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  gap: 28px; flex-wrap: wrap;
+}
+.info-box.show { display: flex; }
+.info-item { display: flex; flex-direction: column; gap: 2px; }
+.info-item .lbl { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+.info-item .val { font-size: 17px; font-weight: 900; color: var(--blue-700); }
+.info-item.danger .val { color: var(--red); }
+
+/* ── BUTTONS ── */
+.btn {
+  padding: 9px 22px;
+  border: none; border-radius: var(--radius-sm);
+  font-family: 'Lato', sans-serif;
+  font-size: 13px; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.3px;
+  transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--blue-500), var(--blue-600));
+  color: #fff; box-shadow: 0 2px 8px rgba(31,90,170,0.3);
+}
+.btn-primary:hover { opacity: 0.9; box-shadow: 0 4px 14px rgba(31,90,170,0.35); }
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), #a87015);
+  color: #fff;
+}
+.btn-danger { background: var(--red); color: #fff; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--blue-400);
+  color: var(--blue-500);
+}
+.btn-outline:hover { background: var(--blue-50); }
+.form-actions { margin-top: 18px; display: flex; gap: 10px; align-items: center; }
+
+/* ── TABLE ── */
+.table-wrap { overflow-x: auto; border-radius: var(--radius); box-shadow: var(--shadow-sm); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  background: var(--blue-800);
+  color: rgba(255,255,255,0.9);
+  padding: 10px 12px;
+  text-align: left; font-weight: 700;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+thead th:first-child { border-radius: var(--radius) 0 0 0; }
+thead th:last-child  { border-radius: 0 var(--radius) 0 0; }
+tbody tr:nth-child(even) { background: var(--blue-50); }
+tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+tbody tr:hover { background: #deeaf8; }
+.empty-row td { text-align: center; color: var(--muted); padding: 32px; font-style: italic; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-block; padding: 3px 9px;
+  border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+}
+.badge-settled   { background: var(--green-lt); color: var(--green); }
+.badge-pending   { background: var(--amber-lt); color: var(--amber); }
+.badge-advance   { background: var(--blue-100); color: var(--blue-700); }
+.badge-partial   { background: #fde8d3; color: #7a3d00; }
+.badge-issued    { background: #e2d9f3; color: #4a235a; }
+.badge-cleared   { background: var(--green-lt); color: var(--green); }
+.badge-cancelled { background: var(--red-lt); color: var(--red); }
+.badge-blue      { background: var(--blue-100); color: var(--blue-700); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--blue-700); color: #fff;
+  padding: 11px 22px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 700;
+  box-shadow: var(--shadow-lg);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  transform: translateY(10px);
+  z-index: 9999;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.toast-err { background: var(--red); }
+
+/* ── AMOUNT COLORS ── */
+.amt-red   { color: var(--red);   font-weight: 700; }
+.amt-blue  { color: var(--blue-600); font-weight: 700; }
+.amt-green { color: var(--green); font-weight: 700; }
+
+/* ── MISC ── */
+hr.divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+select.inline-sel {
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 4px 8px; font-family: 'Lato', sans-serif;
+  font-size: 12px; background: var(--blue-50);
+}
+
+
+</style>
+</head>
+<body>
+<div id="app-header"></div>
+
+<div class="page-wrap">
+  <div class="page-title"><h2>💳 Payment Entry</h2><div class="title-line"></div></div>
+  <div class="card">
+    <div class="card-title">New Payment Entry</div>
+    <div class="info-box" id="supplierInfo">
+      <div class="info-item"><div class="lbl">Opening Bal.</div><div class="val" id="si-open">0</div></div>
+      <div class="info-item"><div class="lbl">Total Purchases</div><div class="val" id="si-purch">0</div></div>
+      <div class="info-item"><div class="lbl">Total Paid</div><div class="val" id="si-paid">0</div></div>
+      <div class="info-item danger"><div class="lbl">Outstanding</div><div class="val" id="si-out">0</div></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Date *</label><input type="date" id="pay-date"/></div>
+      <div class="form-group"><label>Supplier *</label><select id="pay-supplier" onchange="updatePaySupInfo()"><option value="">-- Select Supplier --</option></select></div>
+      <div class="form-group"><label>Payment Type</label><select id="pay-type"><option>Full Payment</option><option>Part Payment</option></select></div>
+      <div class="form-group"><label>Payment Method</label><select id="pay-method" onchange="togglePayCheque()"><option>Cheque</option><option>Cash</option></select></div>
+      <div class="form-group"><label>Amount Paid (LKR) *</label><input type="number" id="pay-amount" min="0" placeholder="0.00"/></div>
+      <div class="form-group"><label>Reference No</label><input type="text" id="pay-ref" placeholder="Optional"/></div>
+      <div class="form-group full"><label>Notes</label><input type="text" id="pay-notes" placeholder="Optional remarks"/></div>
+    </div>
+    <div class="cond-block" id="chequeBlock">
+      <div class="card-title">📋 Cheque Details</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Cheque No</label><input type="text" id="pay-chqno" placeholder="CHQ-001"/></div>
+        <div class="form-group"><label>Cheque Date</label><input type="date" id="pay-chqdate"/></div>
+        <div class="form-group"><label>Bank Name</label><input type="text" id="pay-bank" placeholder="e.g. Bank of Ceylon"/></div>
+        <div class="form-group"><label>Cheque Status</label><select id="pay-chqstatus"><option>Issued</option><option>Pending</option><option>Cleared</option></select></div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="savePaymentForm()">+ Save Payment</button>
+      <button class="btn btn-outline" onclick="clearPayForm()">Clear</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Payment Records</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Date</th><th>Supplier</th><th>Pay Type</th><th>Method</th><th>Cheque No</th><th>Bank</th><th>Ref</th><th>Amount (LKR)</th><th>Action</th></tr></thead>
+      <tbody id="paymentsTable"><tr class="empty-row"><td colspan="10">No payments yet.</td></tr></tbody>
+    </table></div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+<script>
+const COMPANY = "Vali East Northern Division MPCS Ltd";
+const ADDRESS = "Point Pedro Road, Avarankal, Puttur, Atchuvely";
+const LOGO_URL = ""; // Set your GitHub raw image URL here
+
+const PAGES = [
+  { file: "dashboard.html",   label: "Dashboard",   icon: "⊞" },
+  { file: "suppliers.html",   label: "Suppliers",   icon: "👤" },
+  { file: "purchases.html",   label: "Purchases",   icon: "🛒" },
+  { file: "payments.html",    label: "Payments",    icon: "💳" },
+  { file: "cheques.html",     label: "Cheques",     icon: "📋" },
+  { file: "outstanding.html", label: "Outstanding", icon: "📊" },
+  { file: "ledger.html",      label: "Ledger",      icon: "📒" },
+];
+
+function renderHeader(activePage) {
+  const today = new Date().toLocaleDateString('en-LK', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+  const logoHTML = LOGO_URL
+    ? `<img src="${LOGO_URL}" alt="Logo" style="height:52px;width:52px;object-fit:contain;border-radius:8px;background:#fff;padding:3px;">`
+    : `<div class="logo-box">VEM</div>`;
+  const navLinks = PAGES.map(p =>
+    `<a href="${p.file}" class="nav-link${activePage===p.file?' active':''}"><span class="nav-icon">${p.icon}</span>${p.label}</a>`
+  ).join('');
+  document.getElementById('app-header').innerHTML = `
+    <header>
+      <div class="header-inner">
+        ${logoHTML}
+        <div class="brand-text"><h1>${COMPANY}</h1><p>${ADDRESS}</p></div>
+        <div class="header-right"><span class="system-label">Supplier Payables System</span><span class="today-date">${today}</span></div>
+      </div>
+      <nav class="main-nav"><div class="nav-inner">${navLinks}</div></nav>
+    </header>`;
+}
+
+function getData(k) { try { return JSON.parse(localStorage.getItem('mpcs_'+k)||'[]'); } catch(e){ return []; } }
+function setData(k,v) { localStorage.setItem('mpcs_'+k, JSON.stringify(v)); }
+function getSuppliers() { return getData('suppliers'); }
+function getPurchases() { return getData('purchases'); }
+function getPayments()  { return getData('payments'); }
+function saveSuppliers(d) { setData('suppliers',d); }
+function savePurchases(d) { setData('purchases',d); }
+function savePayments(d)  { setData('payments',d); }
+function fmt(n) { return Number(n||0).toLocaleString('en-LK',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function getSupplierBalance(sid) {
+  const sup = getSuppliers().find(s=>s.id==sid);
+  if(!sup) return {opening:0,purchases:0,paid:0,outstanding:0};
+  const purchases = getPurchases().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
+  const paid      = getPayments().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
+  return {opening:Number(sup.opening),purchases,paid,outstanding:Number(sup.opening)+purchases-paid};
+}
+function statusBadge(o) {
+  if(o>0)  return `<span class="badge badge-pending">Pending</span>`;
+  if(o===0) return `<span class="badge badge-settled">Settled</span>`;
+  return `<span class="badge badge-advance">Advance</span>`;
+}
+function toast(msg,isErr=false) {
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t);}
+  t.textContent=msg; t.className='toast show'+(isErr?' toast-err':'');
+  clearTimeout(t._tid); t._tid=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+renderHeader('payments.html');
+
+document.getElementById('pay-date').value=todayStr();
+document.getElementById('pay-chqdate').value=todayStr();
+togglePayCheque();
+function populatePaySuppliers(){
+  const sel=document.getElementById('pay-supplier');const cur=sel.value;
+  sel.innerHTML='<option value="">-- Select Supplier --</option>';
+  getSuppliers().forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o);});
+  if(cur)sel.value=cur;
+}
+function updatePaySupInfo(){
+  const sid=document.getElementById('pay-supplier').value;
+  const box=document.getElementById('supplierInfo');
+  if(!sid){box.classList.remove('show');return;}
+  const b=getSupplierBalance(sid);
+  document.getElementById('si-open').textContent=fmt(b.opening);
+  document.getElementById('si-purch').textContent=fmt(b.purchases);
+  document.getElementById('si-paid').textContent=fmt(b.paid);
+  document.getElementById('si-out').textContent=fmt(b.outstanding);
+  box.classList.add('show');
+}
+function togglePayCheque(){
+  document.getElementById('chequeBlock').classList.toggle('show',document.getElementById('pay-method').value==='Cheque');
+}
+function savePaymentForm(){
+  const sid=document.getElementById('pay-supplier').value;
+  const amt=parseFloat(document.getElementById('pay-amount').value);
+  if(!sid){toast('Please select a supplier.',true);return;}
+  if(!amt||amt<=0){toast('Enter a valid amount.',true);return;}
+  const method=document.getElementById('pay-method').value;
+  const sup=getSuppliers().find(s=>s.id==sid);
+  const pays=getPayments();
+  pays.push({id:Date.now(),date:document.getElementById('pay-date').value,supplierId:Number(sid),supplier:sup?sup.name:'',payType:document.getElementById('pay-type').value,method,amount:amt,ref:document.getElementById('pay-ref').value.trim(),notes:document.getElementById('pay-notes').value.trim(),chqNo:method==='Cheque'?document.getElementById('pay-chqno').value.trim():'',chqDate:method==='Cheque'?document.getElementById('pay-chqdate').value:'',bank:method==='Cheque'?document.getElementById('pay-bank').value.trim():'',chqStatus:method==='Cheque'?document.getElementById('pay-chqstatus').value:''});
+  savePayments(pays);renderPayTable();updatePaySupInfo();clearPayForm();toast('Payment recorded successfully.');
+}
+function deletePaymentRow(id){
+  if(!confirm('Delete this payment?'))return;
+  savePayments(getPayments().filter(p=>p.id!==id));renderPayTable();updatePaySupInfo();toast('Payment deleted.');
+}
+function clearPayForm(){
+  ['pay-ref','pay-notes','pay-chqno','pay-bank'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pay-amount').value='';document.getElementById('pay-date').value=todayStr();document.getElementById('pay-chqdate').value=todayStr();
+}
+function renderPayTable(){
+  const pays=getPayments();const tbody=document.getElementById('paymentsTable');
+  if(!pays.length){tbody.innerHTML='<tr class="empty-row"><td colspan="10">No payments yet.</td></tr>';return;}
+  tbody.innerHTML=[...pays].reverse().map((p,i)=>`<tr><td>${pays.length-i}</td><td>${p.date}</td><td><strong>${p.supplier}</strong></td><td><span class="badge badge-blue">${p.payType}</span></td><td><span class="badge ${p.method==='Cheque'?'badge-issued':'badge-settled'}">${p.method}</span></td><td>${p.chqNo}</td><td>${p.bank}</td><td>${p.ref}</td><td class="amt-green">${fmt(p.amount)}</td><td><button class="btn btn-danger btn-sm" onclick="deletePaymentRow(${p.id})">✕</button></td></tr>`).join('');
+}
+populatePaySuppliers();renderPayTable();
+
+</script>
+</body>
+</html>
