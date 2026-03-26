@@ -334,6 +334,19 @@ select.inline-sel {
       <div class="form-group"><label>Amount (LKR) *</label><input type="number" id="p-amount" min="0" placeholder="0.00"/></div>
       <div class="form-group full"><label>Description / Notes</label><input type="text" id="p-desc" placeholder="Brief description"/></div>
     </div>
+    <div class="form-group">
+  <label>Discount Type</label>
+  <select id="p-discount-type" onchange="toggleDiscount()">
+    <option value="">None</option>
+    <option value="percent">Percentage (%)</option>
+    <option value="amount">Amount (LKR)</option>
+  </select>
+</div>
+
+<div class="form-group">
+  <label>Discount Value</label>
+  <input type="number" id="p-discount" placeholder="0"/>
+</div>
     <div class="form-actions">
       <button class="btn btn-primary" onclick="savePurchaseForm()">+ Save Purchase</button>
       <button class="btn btn-outline" onclick="clearPForm()">Clear</button>
@@ -430,15 +443,32 @@ function populatePSuppliers(){
     if(cur)sel.value=cur;
   });
 }
+  function toggleDiscount(){
+  const type = document.getElementById('p-discount-type').value;
+  const input = document.getElementById('p-discount');
+
+  if(type === "percent"){
+    input.placeholder = "Enter % (e.g. 10)";
+  } else if(type === "amount"){
+    input.placeholder = "Enter amount (e.g. 500)";
+  } else {
+    input.placeholder = "0";
+    input.value = "";
+  }
+}
 function savePurchaseForm(){
-  const sid=document.getElementById('p-supplier').value;
-  const amt=parseFloat(document.getElementById('p-amount').value);
-  if(!sid){toast('Please select a supplier.',true);return;}
-  if(!amt||amt<=0){toast('Enter a valid amount.',true);return;}
-  const sup=getSuppliers().find(s=>s.id==sid);
-  const p=getPurchases();
-  p.push({id:Date.now(),date:document.getElementById('p-date').value,supplierId:Number(sid),supplier:sup?sup.name:'',type:document.getElementById('p-type').value,invoice:document.getElementById('p-invoice').value.trim(),desc:document.getElementById('p-desc').value.trim(),amount:amt});
-  savePurchases(p);populatePSuppliers();renderPTable();clearPForm();toast('Purchase entry saved.');
+ const amt = parseFloat(document.getElementById('p-amount').value);
+const dType = document.getElementById('p-discount-type').value;
+const dVal = parseFloat(document.getElementById('p-discount').value) || 0;
+
+let finalAmount = amt;
+
+if(dType === "percent"){
+  finalAmount = amt - (amt * dVal / 100);
+}
+else if(dType === "amount"){
+  finalAmount = amt - dVal;
+}
 }
 function deletePurchaseRow(id){
   if(!confirm('Delete this purchase entry?'))return;
@@ -458,9 +488,13 @@ function renderPTable(){
   document.getElementById('totalLabel').textContent=`Total: LKR ${fmt(total)}`;
   const tbody=document.getElementById('purchasesTable');
   if(!purchases.length){tbody.innerHTML='<tr class="empty-row"><td colspan="8">No records found.</td></tr>';return;}
-  tbody.innerHTML=[...purchases].reverse().map((p,i)=>`<tr><td>${purchases.length-i}</td><td>${p.date}</td><td><strong>${p.supplier}</strong></td><td><span class="badge badge-blue">${p.type}</span></td><td>${p.invoice}</td><td>${p.desc}</td><td class="amt-blue">${fmt(p.amount)}</td><td><button class="btn btn-danger btn-sm" onclick="deletePurchaseRow(${p.id})">✕</button></td></tr>`).join('');
+  tbody.innerHTML=[...purchases].reverse().map((p,i)=>`<tr><td>${purchases.length-i}</td><td>${p.date}</td><td><strong>${p.supplier}</strong></td><td><span class="badge badge-blue">${p.type}</span></td><td>${p.invoice}</td><td>${p.desc}</td><td class="amt-blue">
+  ${fmt(p.amount)}
+  ${p.discountValue ? `<br><small>(Disc: ${p.discountType === 'percent' ? p.discountValue + '%' : 'LKR ' + p.discountValue})</small>` : ''}
+</td><td><button class="btn btn-danger btn-sm" onclick="deletePurchaseRow(${p.id})">✕</button></td></tr>`).join('');
 }
 populatePSuppliers();renderPTable();
+
 
 </script>
 </body>
