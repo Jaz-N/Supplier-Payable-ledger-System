@@ -328,6 +328,7 @@ select.inline-sel {
     <div class="card-title">Add New Supplier</div>
     <div class="form-grid">
       <div class="form-group"><label>Supplier Name *</label><input type="text" id="s-name" placeholder="e.g. Royal Stationery"/></div>
+    <div class="form-group"> <label>Ledger No</label><input type="text" id="s-ledger" placeholder="e.g. LED-001"/></div>
       <div class="form-group"><label>Contact Person</label><input type="text" id="s-contact"/></div>
       <div class="form-group"><label>Mobile No</label><input type="text" id="s-mobile"/></div>
       <div class="form-group"><label>Landline No</label><input type="text" id="s-landline"/></div>
@@ -420,7 +421,18 @@ function saveSupplierForm(){
   const name=document.getElementById('s-name').value.trim();
   if(!name){toast('Supplier name is required.',true);return;}
   const s=getSuppliers();
-  s.push({id:Date.now(),name,contact:document.getElementById('s-contact').value.trim(),mobile:document.getElementById('s-mobile').value.trim(),landline:document.getElementById('s-landline').value.trim(),email:document.getElementById('s-email').value.trim(),opening:parseFloat(document.getElementById('s-opening').value)||0,opDate:document.getElementById('s-opdate').value,address:document.getElementById('s-address').value.trim()});
+s.push({
+  id: Date.now(),
+  name,
+  ledger: document.getElementById('s-ledger').value.trim(),  // ✅ THIS IS NEW
+  contact: document.getElementById('s-contact').value.trim(),
+  mobile: document.getElementById('s-mobile').value.trim(),
+  landline: document.getElementById('s-landline').value.trim(),
+  email: document.getElementById('s-email').value.trim(),
+  opening: parseFloat(document.getElementById('s-opening').value) || 0,
+  opDate: document.getElementById('s-opdate').value,
+  address: document.getElementById('s-address').value.trim()
+});
   saveSuppliers(s);renderSTable();clearSForm();toast('Supplier added successfully.');
 }
 function deleteSup(id){
