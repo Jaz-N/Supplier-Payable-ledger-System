@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Summary – MPCS Payables</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@700&display=swap');
+:root{--blue-900:#0a1628;--blue-800:#0d2244;--blue-700:#103060;--blue-600:#1a4a8a;--blue-500:#1f5aaa;--blue-400:#3a7bd5;--blue-100:#ddeeff;--blue-50:#f0f6ff;--gold:#c8941a;--gold-lt:#f5e6c0;--bg:#f2f5fa;--surface:#ffffff;--border:#d0dae8;--text:#12243a;--muted:#5a6e85;--red:#c0392b;--red-lt:#fdecea;--green:#1a6b3c;--green-lt:#e3f5ea;--amber:#b45309;--amber-lt:#fef3c7;--shadow-sm:0 1px 4px rgba(10,22,40,0.08);--shadow-lg:0 8px 32px rgba(10,22,40,0.14);--radius:8px;--radius-sm:5px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;}
+header{background:linear-gradient(135deg,var(--blue-900) 0%,var(--blue-800) 60%,var(--blue-700) 100%);box-shadow:var(--shadow-lg);position:sticky;top:0;z-index:100;}
+.header-inner{display:flex;align-items:center;gap:16px;padding:12px 28px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.brand-text h1{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#fff;line-height:1.2;}
+.brand-text p{font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;}
+.header-right{margin-left:auto;text-align:right;display:flex;flex-direction:column;gap:2px;}
+.system-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--gold);}
+.today-date{font-size:11px;color:rgba(255,255,255,0.5);}
+.main-nav{background:var(--blue-800);padding:0 20px;}
+.nav-inner{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;}
+.nav-inner::-webkit-scrollbar{display:none;}
+.nav-link{display:flex;align-items:center;gap:6px;padding:10px 16px;text-decoration:none;color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;white-space:nowrap;border-bottom:3px solid transparent;transition:color 0.15s,border-color 0.15s;}
+.nav-link:hover{color:rgba(255,255,255,0.9);}
+.nav-link.active{color:#fff;border-bottom-color:var(--gold);}
+.page-wrap{padding:24px 28px;max-width:1400px;}
+.page-title{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.page-title h2{font-family:'Playfair Display',serif;font-size:20px;color:var(--blue-700);}
+.title-line{flex:1;height:2px;background:linear-gradient(90deg,var(--border) 0%,transparent 100%);}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
+.card-title{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--blue-600);margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--blue-50);}
+.btn{padding:9px 22px;border:none;border-radius:var(--radius-sm);font-family:'Lato',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity 0.15s,transform 0.1s;}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:linear-gradient(135deg,var(--blue-500),var(--blue-600));color:#fff;box-shadow:0 2px 8px rgba(31,90,170,0.3);}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#a87015);color:#fff;}
+.btn-outline{background:transparent;border:1px solid var(--blue-400);color:var(--blue-500);}
+.btn-sm{padding:6px 14px;font-size:12px;}
+/* Tab buttons */
+.tab-bar{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.tab-btn{padding:8px 20px;border:2px solid var(--blue-400);border-radius:var(--radius-sm);background:transparent;color:var(--blue-600);font-family:'Lato',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s;}
+.tab-btn.active{background:var(--blue-600);color:#fff;border-color:var(--blue-600);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+/* Tables */
+.table-wrap{overflow-x:auto;border-radius:var(--radius);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:var(--blue-800);color:rgba(255,255,255,0.9);padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;white-space:nowrap;}
+thead th:first-child{border-radius:var(--radius) 0 0 0;}
+thead th:last-child{border-radius:0 var(--radius) 0 0;}
+tbody tr:nth-child(even){background:var(--blue-50);}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--border);}
+tbody tr:hover{background:#deeaf8;}
+tfoot td{background:var(--blue-800);color:#fff;padding:10px 12px;font-weight:900;font-size:13px;}
+.empty-row td{text-align:center;color:var(--muted);padding:32px;font-style:italic;}
+.amt-red{color:var(--red);font-weight:700;}
+.amt-blue{color:var(--blue-600);font-weight:700;}
+.amt-green{color:var(--green);font-weight:700;}
+select.inline-sel{border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-family:'Lato',sans-serif;font-size:12px;background:var(--blue-50);}
+input.inline-search{border:1px solid var(--border);border-radius:4px;padding:5px 10px;font-family:'Lato',sans-serif;font-size:13px;background:var(--blue-50);min-width:200px;}
+/* Month selector */
+.month-group{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.month-group label{font-size:12px;font-weight:900;text-transform:uppercase;color:var(--muted);}
+.month-group input[type=month]{border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px;font-family:'Lato',sans-serif;font-size:13px;background:var(--blue-50);}
+/* Print */
+@media print{
+  #app-header,.no-print{display:none!important;}
+  .page-wrap{padding:0;max-width:100%;}
+  .print-header{display:block!important;}
+  .tab-bar{display:none!important;}
+  .tab-panel{display:block!important;}
+  .card{box-shadow:none;border:1px solid #ccc;margin-bottom:14px;}
+  .signature-row{page-break-inside:avoid;}
+}
+.print-header{display:none;text-align:center;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #0a1628;}
+.print-header h1{font-size:18px;font-weight:900;color:#0a1628;}
+.print-header p{font-size:12px;color:#444;margin-top:3px;}
+.print-header h2{font-size:14px;margin-top:10px;font-weight:900;color:#103060;}
+/* Signature row */
+.signature-row{display:flex;justify-content:space-between;margin-top:40px;padding-top:20px;border-top:1px solid var(--border);gap:20px;flex-wrap:wrap;}
+.sig-box{flex:1;min-width:160px;text-align:center;}
+.sig-line{border-top:1px solid #555;margin-top:40px;padding-top:6px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+/* Month badge */
+.month-badge{display:inline-block;background:var(--blue-100);color:var(--blue-700);padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;}
+</style>
+</head>
+<body>
+<div id="app-header"></div>
+
+<div class="page-wrap">
+  <!-- Print Header (hidden on screen) -->
+  <div class="print-header">
+    <h1>Vali East Northern Division MPCS Ltd</h1>
+    <p>Point Pedro Road, Avarankal, Puttur, Atchuvely</p>
+    <h2 id="printTitle">Supplier Summary Report</h2>
+    <p id="printMeta"></p>
+  </div>
+
+  <div class="page-title"><h2>📑 Supplier Summary</h2><div class="title-line"></div></div>
+
+  <!-- Controls -->
+  <div class="card no-print" style="padding:14px 20px;">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <div class="month-group">
+        <label>Month</label>
+        <input type="month" id="sel-month" onchange="renderAll()"/>
+      </div>
+      <input type="text" class="inline-search" id="f-name" placeholder="🔍 Filter by supplier..." oninput="renderAll()"/>
+      <button class="btn btn-outline btn-sm" onclick="printSummary()" style="margin-left:auto;">🖨 Print</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar no-print">
+    <button class="tab-btn active" onclick="switchTab('detail')">📋 Detailed Summary</button>
+    <button class="tab-btn" onclick="switchTab('quick')">⚡ Quick Balance View</button>
+    <button class="tab-btn" onclick="switchTab('register')">📖 Register View</button>
+  </div>
+
+  <!-- TAB 1: Detailed Summary -->
+  <div id="tab-detail" class="tab-panel active">
+    <div class="card">
+      <div class="card-title">Supplier Account Summary — <span id="monthLabel1">All Periods</span></div>
+      <div class="table-wrap"><table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Supplier Name</th>
+            <th>Ledger No</th>
+            <th>Opening Balance</th>
+            <th>Purchase (F-08)</th>
+            <th>Journal (F-08)</th>
+            <th>Cheque Paid</th>
+            <th>Return Goods (F-19)</th>
+            <th>Discount Received</th>
+            <th>Closing Balance</th>
+          </tr>
+        </thead>
+        <tbody id="detailTable"></tbody>
+        <tfoot id="detailFoot"></tfoot>
+      </table></div>
+    </div>
+    <div class="signature-row">
+      <div class="sig-box"><div class="sig-line">Prepared By</div></div>
+      <div class="sig-box"><div class="sig-line">Checked By</div></div>
+      <div class="sig-box"><div class="sig-line">Accountant</div></div>
+      <div class="sig-box"><div class="sig-line">General Manager</div></div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Quick Balance View -->
+  <div id="tab-quick" class="tab-panel">
+    <div class="card">
+      <div class="card-title">Supplier Closing Balances — <span id="monthLabel2">All Periods</span></div>
+      <div class="table-wrap"><table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Supplier Name</th>
+            <th>Closing Balance (LKR)</th>
+          </tr>
+        </thead>
+        <tbody id="quickTable"></tbody>
+        <tfoot id="quickFoot"></tfoot>
+      </table></div>
+    </div>
+    <div class="signature-row">
+      <div class="sig-box"><div class="sig-line">Prepared By</div></div>
+      <div class="sig-box"><div class="sig-line">Checked By</div></div>
+      <div class="sig-box"><div class="sig-line">Accountant</div></div>
+      <div class="sig-box"><div class="sig-line">General Manager</div></div>
+    </div>
+  </div>
+
+  <!-- TAB 3: Register View -->
+  <div id="tab-register" class="tab-panel">
+    <div class="card">
+      <div class="card-title">Transaction Register — <span id="monthLabel3">All Periods</span></div>
+      <div class="table-wrap"><table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Supplier</th>
+            <th>Ledger No</th>
+            <th>Type</th>
+            <th>Invoice / Ref</th>
+            <th>Description</th>
+            <th>Debit (LKR)</th>
+            <th>Credit (LKR)</th>
+          </tr>
+        </thead>
+        <tbody id="regTable"></tbody>
+        <tfoot id="regFoot"></tfoot>
+      </table></div>
+    </div>
+    <div class="signature-row">
+      <div class="sig-box"><div class="sig-line">Prepared By</div></div>
+      <div class="sig-box"><div class="sig-line">Checked By</div></div>
+      <div class="sig-box"><div class="sig-line">Accountant</div></div>
+      <div class="sig-box"><div class="sig-line">General Manager</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const COMPANY="Vali East Northern Division MPCS Ltd";
+const ADDRESS="Point Pedro Road, Avarankal, Puttur, Atchuvely";
+const LOGO_URL="images (1).jfif";
+const PAGES=[
+  {file:"index.html",label:"Dashboard",icon:"⊞"},
+  {file:"suppliers.html",label:"Suppliers",icon:"👤"},
+  {file:"purchases.html",label:"Purchases",icon:"🛒"},
+  {file:"payments.html",label:"Payments",icon:"💳"},
+  {file:"cheques.html",label:"Cheques",icon:"📋"},
+  {file:"outstanding.html",label:"Outstanding",icon:"📊"},
+  {file:"ledger.html",label:"Ledger",icon:"📒"},
+  {file:"summary.html",label:"Summary",icon:"📑"},
+];
+function renderHeader(a){
+  const today=new Date().toLocaleDateString('en-LK',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  const logoHTML=LOGO_URL?`<img src="${LOGO_URL}" alt="Logo" style="height:52px;width:52px;object-fit:contain;border-radius:8px;background:#fff;padding:3px;">`:`<div class="logo-box">VEM</div>`;
+  const navLinks=PAGES.map(p=>`<a href="${p.file}" class="nav-link${a===p.file?' active':''}"><span>${p.icon}</span>${p.label}</a>`).join('');
+  document.getElementById('app-header').innerHTML=`<header><div class="header-inner">${logoHTML}<div class="brand-text"><h1>${COMPANY}</h1><p>${ADDRESS}</p></div><div class="header-right"><span class="system-label">Supplier Payables System</span><span class="today-date">${today}</span></div></div><nav class="main-nav"><div class="nav-inner">${navLinks}</div></nav></header>`;
+}
+function getData(k){try{return JSON.parse(localStorage.getItem('mpcs_'+k)||'[]');}catch(e){return[];}}
+function getSuppliers(){return getData('suppliers');}
+function getPurchases(){return getData('purchases');}
+function getPayments(){return getData('payments');}
+function fmt(n){return Number(n||0).toLocaleString('en-LK',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function todayStr(){return new Date().toISOString().split('T')[0];}
+function thisMonthStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');}
+
+renderHeader('summary.html');
+
+// Set default month to current month
+document.getElementById('sel-month').value=thisMonthStr();
+
+let activeTab='detail';
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelectorAll('.tab-btn')[['detail','quick','register'].indexOf(tab)].classList.add('active');
+  activeTab=tab;
+}
+
+function getMonthFilter(){return document.getElementById('sel-month').value;}
+function getNameFilter(){return (document.getElementById('f-name').value||'').toLowerCase();}
+
+function inMonth(dateStr,month){
+  if(!month)return true;
+  return dateStr&&dateStr.startsWith(month);
+}
+
+function renderAll(){
+  const month=getMonthFilter();
+  const nameFilter=getNameFilter();
+  const mLabel=month?new Date(month+'-01').toLocaleDateString('en-LK',{year:'numeric',month:'long'}):'All Periods';
+  document.getElementById('monthLabel1').textContent=mLabel;
+  document.getElementById('monthLabel2').textContent=mLabel;
+  document.getElementById('monthLabel3').textContent=mLabel;
+
+  const suppliers=getSuppliers().filter(s=>!nameFilter||s.name.toLowerCase().includes(nameFilter));
+  const allPurchases=getPurchases();
+  const allPayments=getPayments();
+
+  // --- TAB 1: Detailed ---
+  let detailRows=[];
+  suppliers.forEach(s=>{
+    const sid=s.id;
+    // Opening = supplier opening balance (always from setup)
+    const opening=Number(s.opening||0);
+
+    // This month transactions only
+    const mPurchases=allPurchases.filter(p=>p.supplierId==sid&&(!month||inMonth(p.date,month)));
+    const mPayments=allPayments.filter(p=>p.supplierId==sid&&(!month||inMonth(p.date,month)));
+
+    const purchaseAmt=mPurchases.filter(p=>p.type==='Purchase').reduce((a,p)=>a+Number(p.amount),0);
+    const journalAmt=mPurchases.filter(p=>p.type==='Journal').reduce((a,p)=>a+Number(p.amount),0);
+    const chqPaid=mPayments.filter(p=>p.method==='Cheque').reduce((a,p)=>a+Number(p.amount),0);
+    const returnAmt=mPurchases.filter(p=>p.type==='Return Goods (F-19)').reduce((a,p)=>a+Number(p.amount),0);
+    const discAmt=mPurchases.filter(p=>p.type==='Discount Received').reduce((a,p)=>a+Number(p.amount),0);
+
+    // Closing = opening + all purchases (debit) - all payments (credit) for the month
+    const allMonthDebit=purchaseAmt+journalAmt;
+    const allMonthCredit=chqPaid+returnAmt+discAmt;
+    // For closing, use running total (all time) not just month
+    const totalPurch=allPurchases.filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
+    const totalPaid=allPayments.filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
+    const closing=opening+totalPurch-totalPaid;
+
+    detailRows.push({s,opening,purchaseAmt,journalAmt,chqPaid,returnAmt,discAmt,closing});
+  });
+
+  const dTbody=document.getElementById('detailTable');
+  if(!detailRows.length){dTbody.innerHTML='<tr class="empty-row"><td colspan="10">No suppliers found.</td></tr>';document.getElementById('detailFoot').innerHTML='';return;}
+  dTbody.innerHTML=detailRows.map((r,i)=>`<tr>
+    <td>${i+1}</td>
+    <td><strong>${r.s.name}</strong></td>
+    <td>${r.s.ledger||'—'}</td>
+    <td class="amt-blue">${fmt(r.opening)}</td>
+    <td class="amt-blue">${fmt(r.purchaseAmt)}</td>
+    <td class="amt-blue">${fmt(r.journalAmt)}</td>
+    <td class="amt-green">${fmt(r.chqPaid)}</td>
+    <td class="amt-green">${fmt(r.returnAmt)}</td>
+    <td class="amt-green">${fmt(r.discAmt)}</td>
+    <td class="${r.closing>0?'amt-red':r.closing===0?'amt-green':'amt-blue'}"><strong>${fmt(r.closing)}</strong></td>
+  </tr>`).join('');
+
+  document.getElementById('detailFoot').innerHTML=`<tr>
+    <td colspan="3">TOTAL</td>
+    <td>${fmt(detailRows.reduce((a,r)=>a+r.opening,0))}</td>
+    <td>${fmt(detailRows.reduce((a,r)=>a+r.purchaseAmt,0))}</td>
+    <td>${fmt(detailRows.reduce((a,r)=>a+r.journalAmt,0))}</td>
+    <td>${fmt(detailRows.reduce((a,r)=>a+r.chqPaid,0))}</td>
+    <td>${fmt(detailRows.reduce((a,r)=>a+r.returnAmt,0))}</td>
+    <td>${fmt(detailRows.reduce((a,r)=>a+r.discAmt,0))}</td>
+    <td>${fmt(detailRows.reduce((a,r)=>a+r.closing,0))}</td>
+  </tr>`;
+
+  // --- TAB 2: Quick Balance ---
+  const qTbody=document.getElementById('quickTable');
+  qTbody.innerHTML=detailRows.map((r,i)=>`<tr>
+    <td>${i+1}</td>
+    <td><strong>${r.s.name}</strong><br><small style="color:var(--muted)">${r.s.ledger||''}</small></td>
+    <td class="${r.closing>0?'amt-red':r.closing===0?'amt-green':'amt-blue'}" style="font-size:16px;"><strong>${fmt(r.closing)}</strong></td>
+  </tr>`).join('');
+  const totalClose=detailRows.reduce((a,r)=>a+r.closing,0);
+  document.getElementById('quickFoot').innerHTML=`<tr><td colspan="2">GRAND TOTAL</td><td class="${totalClose>0?'amt-red':'amt-green'}">${fmt(totalClose)}</td></tr>`;
+
+  // --- TAB 3: Register ---
+  let regRows=[];
+  const supMap=Object.fromEntries(getSuppliers().map(s=>[s.id,s]));
+  allPurchases.filter(p=>(!month||inMonth(p.date,month))&&(!nameFilter||(supMap[p.supplierId]?.name||'').toLowerCase().includes(nameFilter))).forEach(p=>{
+    const sup=supMap[p.supplierId];
+    regRows.push({date:p.date,supplier:p.supplier,ledger:sup?.ledger||'—',type:p.type,ref:p.invoice||'',desc:p.desc||'',debit:Number(p.amount),credit:0,order:p.date});
+  });
+  allPayments.filter(p=>(!month||inMonth(p.date,month))&&(!nameFilter||(supMap[p.supplierId]?.name||'').toLowerCase().includes(nameFilter))).forEach(p=>{
+    const sup=supMap[p.supplierId];
+    regRows.push({date:p.date,supplier:p.supplier,ledger:sup?.ledger||'—',type:'Payment ('+p.method+')',ref:p.chqNo||p.ref||'',desc:p.bank||p.notes||'',debit:0,credit:Number(p.amount),order:p.date});
+  });
+  regRows.sort((a,b)=>a.order.localeCompare(b.order));
+
+  const rTbody=document.getElementById('regTable');
+  if(!regRows.length){rTbody.innerHTML='<tr class="empty-row"><td colspan="9">No transactions found.</td></tr>';document.getElementById('regFoot').innerHTML='';return;}
+  rTbody.innerHTML=regRows.map((r,i)=>`<tr>
+    <td>${i+1}</td>
+    <td>${r.date}</td>
+    <td><strong>${r.supplier}</strong></td>
+    <td>${r.ledger}</td>
+    <td><span style="font-size:11px;background:var(--blue-100);color:var(--blue-700);padding:2px 7px;border-radius:10px;font-weight:700;">${r.type}</span></td>
+    <td>${r.ref||'—'}</td>
+    <td>${r.desc||'—'}</td>
+    <td class="amt-blue">${r.debit?fmt(r.debit):''}</td>
+    <td class="amt-green">${r.credit?fmt(r.credit):''}</td>
+  </tr>`).join('');
+  document.getElementById('regFoot').innerHTML=`<tr>
+    <td colspan="7">TOTAL</td>
+    <td>${fmt(regRows.reduce((a,r)=>a+r.debit,0))}</td>
+    <td>${fmt(regRows.reduce((a,r)=>a+r.credit,0))}</td>
+  </tr>`;
+}
+
+function printSummary(){
+  const month=getMonthFilter();
+  const mLabel=month?new Date(month+'-01').toLocaleDateString('en-LK',{year:'numeric',month:'long'}):'All Periods';
+  document.getElementById('printTitle').textContent='Supplier Summary — '+mLabel;
+  document.getElementById('printMeta').textContent='Printed: '+new Date().toLocaleString('en-LK');
+  window.print();
+}
+
+renderAll();
+</script>
+</body>
+</html>
