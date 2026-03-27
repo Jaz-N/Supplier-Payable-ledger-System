@@ -160,5 +160,216 @@ function render(){
 }
 render();
 </script>
+  <!--
+  ╔══════════════════════════════════════════════════════════╗
+  ║  MPCS Payables — Google Sheets Export Panel              ║
+  ║  Paste this block just before </body> in any .html page  ║
+  ║  (index.html recommended so it's always visible)         ║
+  ╚══════════════════════════════════════════════════════════╝
+
+  SETUP STEPS
+  ──────────────────────────────────────────────────────────
+  1. Open script.google.com → New Project → paste Code.gs
+  2. Deploy → New deployment → Web App
+       Execute as : Me
+       Who has access : Anyone
+  3. Copy the Web App URL
+  4. Paste it into the APPS_SCRIPT_URL constant below
+  ──────────────────────────────────────────────────────────
+-->
+
+<!-- ① Add this style block once (merge into your existing <style> if needed) -->
+<style>
+.gsheet-fab{
+  position:fixed;bottom:24px;left:24px;z-index:8888;
+  display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+}
+.gsheet-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 18px;border:none;border-radius:8px;
+  font-family:'Lato',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;box-shadow:0 4px 14px rgba(10,22,40,0.18);
+  transition:opacity 0.15s,transform 0.1s;
+}
+.gsheet-btn:active{transform:scale(0.96);}
+.gsheet-btn.sync {background:#1a6b3c;color:#fff;}
+.gsheet-btn.open {background:#1f5aaa;color:#fff;}
+.gsheet-panel{
+  background:#fff;border:1px solid #d0dae8;border-radius:10px;
+  padding:16px 20px;box-shadow:0 8px 32px rgba(10,22,40,0.14);
+  min-width:300px;display:none;
+}
+.gsheet-panel.show{display:block;}
+.gsheet-panel h4{
+  font-size:12px;font-weight:900;text-transform:uppercase;
+  letter-spacing:1px;color:#1a4a8a;margin-bottom:12px;
+}
+.gsheet-url-row{display:flex;gap:6px;}
+.gsheet-url-row input{
+  flex:1;border:1px solid #d0dae8;border-radius:5px;
+  padding:7px 10px;font-size:12px;font-family:'Lato',sans-serif;
+}
+.gsheet-url-row button{
+  padding:7px 12px;background:#1a4a8a;color:#fff;border:none;
+  border-radius:5px;font-size:12px;font-weight:700;cursor:pointer;
+}
+.gsheet-status{
+  margin-top:10px;font-size:12px;color:#5a6e85;min-height:18px;
+}
+.gsheet-status.ok  {color:#1a6b3c;font-weight:700;}
+.gsheet-status.err {color:#c0392b;font-weight:700;}
+.gsheet-progress{
+  height:4px;background:#d0dae8;border-radius:4px;margin-top:8px;overflow:hidden;
+}
+.gsheet-progress-bar{
+  height:100%;width:0%;background:#1f5aaa;
+  transition:width 0.4s;border-radius:4px;
+}
+</style>
+
+<!-- ② Paste this HTML block just before </body> -->
+<div class="gsheet-fab" id="gsheetFab">
+  <!-- Toggle panel button -->
+  <button class="gsheet-btn sync" onclick="toggleGSheetPanel()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/>
+      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+    </svg>
+    Sync to Google Sheets
+  </button>
+
+  <!-- Expanded config + status panel -->
+  <div class="gsheet-panel" id="gsheetPanel">
+    <h4>📊 Google Sheets Sync</h4>
+    <div class="gsheet-url-row">
+      <input type="text" id="gsUrl" placeholder="Paste Web App URL here…" />
+      <button onclick="saveGsUrl()">Save</button>
+    </div>
+    <div class="gsheet-progress"><div class="gsheet-progress-bar" id="gsBar"></div></div>
+    <div class="gsheet-status" id="gsStatus">Enter your Apps Script Web App URL above, then click Sync.</div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="gsheet-btn sync" style="font-size:12px;padding:8px 14px;" onclick="doSync()">
+        ↑ Sync Now
+      </button>
+      <button class="gsheet-btn open" style="font-size:12px;padding:8px 14px;" onclick="openSheet()" id="gsOpenBtn" disabled>
+        ↗ Open Sheet
+      </button>
+    </div>
+    <div style="margin-top:10px;font-size:10px;color:#8a9ab0;">
+      Last sync: <span id="gsLastSync">never</span>
+    </div>
+  </div>
+</div>
+
+<!-- ③ Script — no external dependencies needed -->
+<script>
+(function(){
+
+  // ── PASTE YOUR WEB APP URL HERE (or leave blank and enter in the panel) ──
+  const APPS_SCRIPT_URL = "";
+  // ────────────────────────────────────────────────────────────────────────
+
+  const LS_KEY_URL  = "mpcs_gs_url";
+  const LS_KEY_LAST = "mpcs_gs_last_sync";
+  const LS_KEY_SSID = "mpcs_gs_sheet_id";
+
+  // Init
+  const storedUrl = localStorage.getItem(LS_KEY_URL) || APPS_SCRIPT_URL;
+  if (storedUrl) {
+    document.getElementById("gsUrl").value = storedUrl;
+    document.getElementById("gsOpenBtn").disabled = false;
+  }
+  const lastSync = localStorage.getItem(LS_KEY_LAST);
+  if (lastSync) document.getElementById("gsLastSync").textContent = lastSync;
+
+  window.toggleGSheetPanel = function() {
+    document.getElementById("gsheetPanel").classList.toggle("show");
+  };
+
+  window.saveGsUrl = function() {
+    const url = document.getElementById("gsUrl").value.trim();
+    if (!url) return;
+    localStorage.setItem(LS_KEY_URL, url);
+    document.getElementById("gsOpenBtn").disabled = false;
+    setStatus("URL saved. Ready to sync.", "ok");
+  };
+
+  window.openSheet = function() {
+    // Open the spreadsheet — Apps Script doGet returns sheet info
+    const url = document.getElementById("gsUrl").value.trim();
+    if (url) window.open(url, "_blank");
+  };
+
+  window.doSync = async function() {
+    const url = document.getElementById("gsUrl").value.trim();
+    if (!url) { setStatus("Please enter and save the Web App URL first.", "err"); return; }
+
+    setBar(10);
+    setStatus("Reading local data…");
+
+    // Collect all data from localStorage
+    function getData(k) {
+      try { return JSON.parse(localStorage.getItem("mpcs_" + k) || "[]"); }
+      catch(e) { return []; }
+    }
+
+    const payload = {
+      action    : "sync",
+      suppliers : getData("suppliers"),
+      purchases : getData("purchases"),
+      payments  : getData("payments"),
+    };
+
+    setBar(30);
+    setStatus("Connecting to Google Sheets…");
+
+    try {
+      // Apps Script requires no-cors workaround — we use a form POST via fetch
+      const resp = await fetch(url, {
+        method  : "POST",
+        // Note: Apps Script doesn't accept application/json in no-cors mode,
+        // so we stringify into text/plain which doPost handles fine.
+        headers : { "Content-Type": "text/plain" },
+        body    : JSON.stringify(payload),
+      });
+
+      setBar(80);
+
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      const json = await resp.json();
+
+      if (!json.ok) throw new Error(json.error || "Unknown error");
+
+      setBar(100);
+      const ts = new Date().toLocaleString("en-LK");
+      localStorage.setItem(LS_KEY_LAST, ts);
+      document.getElementById("gsLastSync").textContent = ts;
+      setStatus(
+        `✓ Synced — ${json.suppliers} suppliers, ${json.purchases} purchases, ${json.payments} payments.`,
+        "ok"
+      );
+
+      // Pulse the bar back to 0 after a moment
+      setTimeout(() => setBar(0), 1800);
+
+    } catch(err) {
+      setBar(0);
+      setStatus("✗ Sync failed: " + err.message, "err");
+      console.error("GSheets sync error:", err);
+    }
+  };
+
+  function setBar(pct) {
+    document.getElementById("gsBar").style.width = pct + "%";
+  }
+
+  function setStatus(msg, cls) {
+    const el = document.getElementById("gsStatus");
+    el.textContent = msg;
+    el.className   = "gsheet-status" + (cls ? " " + cls : "");
+  }
+
+})();
+</script>
 </body>
 </html>
