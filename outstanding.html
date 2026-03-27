@@ -4,427 +4,219 @@
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Outstanding – MPCS Payables</title>
 <style>
-/* shared.css — Corporate Blue Theme — MPCS Payables System */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@700&display=swap');
-
-:root {
-  --blue-900: #0a1628;
-  --blue-800: #0d2244;
-  --blue-700: #103060;
-  --blue-600: #1a4a8a;
-  --blue-500: #1f5aaa;
-  --blue-400: #3a7bd5;
-  --blue-300: #6aa3e8;
-  --blue-100: #ddeeff;
-  --blue-50:  #f0f6ff;
-
-  --gold:     #c8941a;
-  --gold-lt:  #f5e6c0;
-
-  --bg:       #f2f5fa;
-  --surface:  #ffffff;
-  --border:   #d0dae8;
-  --text:     #12243a;
-  --muted:    #5a6e85;
-
-  --red:      #c0392b;
-  --red-lt:   #fdecea;
-  --green:    #1a6b3c;
-  --green-lt: #e3f5ea;
-  --amber:    #b45309;
-  --amber-lt: #fef3c7;
-
-  --shadow-sm: 0 1px 4px rgba(10,22,40,0.08);
-  --shadow:    0 3px 12px rgba(10,22,40,0.10);
-  --shadow-lg: 0 8px 32px rgba(10,22,40,0.14);
-
-  --radius:   8px;
-  --radius-sm: 5px;
+:root{--blue-900:#0a1628;--blue-800:#0d2244;--blue-700:#103060;--blue-600:#1a4a8a;--blue-500:#1f5aaa;--blue-400:#3a7bd5;--blue-100:#ddeeff;--blue-50:#f0f6ff;--gold:#c8941a;--bg:#f2f5fa;--surface:#ffffff;--border:#d0dae8;--text:#12243a;--muted:#5a6e85;--red:#c0392b;--red-lt:#fdecea;--green:#1a6b3c;--green-lt:#e3f5ea;--amber:#b45309;--amber-lt:#fef3c7;--shadow-sm:0 1px 4px rgba(10,22,40,0.08);--shadow-lg:0 8px 32px rgba(10,22,40,0.14);--radius:8px;--radius-sm:5px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;}
+header{background:linear-gradient(135deg,var(--blue-900) 0%,var(--blue-800) 60%,var(--blue-700) 100%);box-shadow:var(--shadow-lg);position:sticky;top:0;z-index:100;}
+.header-inner{display:flex;align-items:center;gap:16px;padding:12px 28px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.brand-text h1{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#fff;line-height:1.2;}
+.brand-text p{font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;}
+.header-right{margin-left:auto;text-align:right;display:flex;flex-direction:column;gap:2px;}
+.system-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--gold);}
+.today-date{font-size:11px;color:rgba(255,255,255,0.5);}
+.main-nav{background:var(--blue-800);padding:0 20px;}
+.nav-inner{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;}
+.nav-inner::-webkit-scrollbar{display:none;}
+.nav-link{display:flex;align-items:center;gap:6px;padding:10px 16px;text-decoration:none;color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;white-space:nowrap;border-bottom:3px solid transparent;transition:color 0.15s,border-color 0.15s;}
+.nav-link:hover{color:rgba(255,255,255,0.9);}
+.nav-link.active{color:#fff;border-bottom-color:var(--gold);}
+.page-wrap{padding:24px 28px;max-width:1280px;}
+.page-title{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.page-title h2{font-family:'Playfair Display',serif;font-size:20px;color:var(--blue-700);}
+.title-line{flex:1;height:2px;background:linear-gradient(90deg,var(--border) 0%,transparent 100%);}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
+.card-title{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--blue-600);margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--blue-50);}
+.stat-row{display:flex;gap:14px;margin-bottom:22px;flex-wrap:wrap;}
+.stat-card{flex:1;min-width:160px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;border-top:4px solid var(--blue-500);box-shadow:var(--shadow-sm);}
+.stat-card.red{border-top-color:var(--red);}
+.stat-card.gold{border-top-color:var(--gold);}
+.stat-card.green{border-top-color:var(--green);}
+.stat-card.blue{border-top-color:var(--blue-400);}
+.stat-card p{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:6px;}
+.stat-card h3{font-size:22px;font-weight:900;color:var(--text);}
+.stat-card h3.red{color:var(--red);}
+.stat-card h3.blue{color:var(--blue-600);}
+.stat-card h3.green{color:var(--green);}
+.stat-card h3.gold{color:var(--amber);}
+.btn{padding:9px 22px;border:none;border-radius:var(--radius-sm);font-family:'Lato',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity 0.15s,transform 0.1s;}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:linear-gradient(135deg,var(--blue-500),var(--blue-600));color:#fff;}
+.btn-outline{background:transparent;border:1px solid var(--blue-400);color:var(--blue-500);}
+.btn-sm{padding:6px 14px;font-size:12px;}
+.table-wrap{overflow-x:auto;border-radius:var(--radius);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:var(--blue-800);color:rgba(255,255,255,0.9);padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;white-space:nowrap;}
+thead th:first-child{border-radius:var(--radius) 0 0 0;}
+thead th:last-child{border-radius:0 var(--radius) 0 0;}
+tbody tr:nth-child(even){background:var(--blue-50);}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--border);}
+tbody tr:hover{background:#deeaf8;}
+tfoot td{background:var(--blue-800);color:#fff;padding:10px 12px;font-weight:900;}
+.empty-row td{text-align:center;color:var(--muted);padding:32px;font-style:italic;}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-settled{background:var(--green-lt);color:var(--green);}
+.badge-pending{background:var(--amber-lt);color:var(--amber);}
+.badge-advance{background:var(--blue-100);color:var(--blue-700);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--blue-700);color:#fff;padding:11px 22px;border-radius:var(--radius);font-size:13px;font-weight:700;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:opacity 0.3s,transform 0.3s;transform:translateY(10px);z-index:9999;}
+.toast.show{opacity:1;transform:translateY(0);}
+.amt-red{color:var(--red);font-weight:700;}
+.amt-blue{color:var(--blue-600);font-weight:700;}
+.amt-green{color:var(--green);font-weight:700;}
+select.inline-sel{border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-family:'Lato',sans-serif;font-size:12px;background:var(--blue-50);}
+input.inline-search{border:1px solid var(--border);border-radius:4px;padding:5px 10px;font-family:'Lato',sans-serif;font-size:13px;background:var(--blue-50);min-width:200px;}
+/* Print styles */
+@media print{
+  #app-header,.no-print{display:none!important;}
+  .page-wrap{padding:0;max-width:100%;}
+  .stat-row{display:none;}
+  .card{box-shadow:none;border:1px solid #ccc;}
+  .print-header{display:block!important;}
 }
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Lato', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  font-size: 14px;
-  min-height: 100vh;
-}
-
-/* ── HEADER ── */
-header {
-  background: linear-gradient(135deg, var(--blue-900) 0%, var(--blue-800) 60%, var(--blue-700) 100%);
-  box-shadow: var(--shadow-lg);
-  position: sticky; top: 0; z-index: 100;
-}
-.header-inner {
-  display: flex; align-items: center; gap: 16px;
-  padding: 12px 28px;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-}
-.logo-box {
-  width: 52px; height: 52px;
-  border-radius: var(--radius);
-  background: var(--blue-600);
-  border: 2px solid var(--gold);
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Playfair Display', serif;
-  font-size: 15px; font-weight: 700;
-  color: var(--gold);
-  letter-spacing: 1px;
-  flex-shrink: 0;
-}
-.brand-text h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: 16px; font-weight: 700;
-  color: #ffffff; line-height: 1.2;
-  letter-spacing: 0.2px;
-}
-.brand-text p { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 2px; }
-.header-right {
-  margin-left: auto; text-align: right;
-  display: flex; flex-direction: column; gap: 2px;
-}
-.system-label {
-  font-size: 11px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 1.2px; color: var(--gold);
-}
-.today-date { font-size: 11px; color: rgba(255,255,255,0.5); }
-
-/* ── NAV ── */
-.main-nav { background: var(--blue-800); padding: 0 20px; }
-.nav-inner { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
-.nav-inner::-webkit-scrollbar { display: none; }
-.nav-link {
-  display: flex; align-items: center; gap: 6px;
-  padding: 10px 16px;
-  text-decoration: none;
-  color: rgba(255,255,255,0.6);
-  font-size: 13px; font-weight: 700;
-  white-space: nowrap;
-  border-bottom: 3px solid transparent;
-  transition: color 0.15s, border-color 0.15s;
-}
-.nav-link:hover { color: rgba(255,255,255,0.9); }
-.nav-link.active { color: #fff; border-bottom-color: var(--gold); }
-.nav-icon { font-size: 14px; }
-
-/* ── PAGE SHELL ── */
-.page-wrap { padding: 24px 28px; max-width: 1200px; }
-.page-title {
-  display: flex; align-items: center; gap: 10px;
-  margin-bottom: 20px;
-}
-.page-title h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 20px; color: var(--blue-700);
-}
-.page-title .title-line {
-  flex: 1; height: 2px;
-  background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
-}
-
-/* ── CARDS ── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 22px;
-  box-shadow: var(--shadow-sm);
-  margin-bottom: 20px;
-}
-.card-title {
-  font-size: 12px; font-weight: 900;
-  text-transform: uppercase; letter-spacing: 1px;
-  color: var(--blue-600); margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--blue-50);
-}
-
-/* ── STAT CARDS ── */
-.stat-row { display: flex; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
-.stat-card {
-  flex: 1; min-width: 160px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px 20px;
-  border-top: 4px solid var(--blue-500);
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-.stat-card.red   { border-top-color: var(--red); }
-.stat-card.gold  { border-top-color: var(--gold); }
-.stat-card.green { border-top-color: var(--green); }
-.stat-card.blue  { border-top-color: var(--blue-400); }
-.stat-card p  { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 6px; }
-.stat-card h3 { font-size: 22px; font-weight: 900; color: var(--text); }
-.stat-card h3.red   { color: var(--red); }
-.stat-card h3.blue  { color: var(--blue-600); }
-.stat-card h3.green { color: var(--green); }
-.stat-card h3.gold  { color: var(--amber); }
-
-/* ── FORM ── */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 14px 18px;
-}
-.form-group { display: flex; flex-direction: column; gap: 5px; }
-.form-group label {
-  font-size: 11px; font-weight: 900;
-  text-transform: uppercase; letter-spacing: 0.6px;
-  color: var(--muted);
-}
-.form-group input,
-.form-group select,
-.form-group textarea {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 8px 11px;
-  font-family: 'Lato', sans-serif;
-  font-size: 13px; color: var(--text);
-  background: var(--blue-50);
-  transition: border 0.15s, box-shadow 0.15s;
-}
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: var(--blue-400);
-  box-shadow: 0 0 0 3px rgba(31,90,170,0.12);
-  background: #fff;
-}
-.full { grid-column: 1 / -1; }
-
-/* conditional block */
-.cond-block {
-  display: none;
-  background: var(--blue-50);
-  border: 1px solid var(--blue-100);
-  border-radius: var(--radius);
-  padding: 14px; margin-top: 12px;
-}
-.cond-block.show { display: block; }
-.cond-block .card-title { color: var(--blue-500); }
-
-/* summary info box */
-.info-box {
-  display: none;
-  background: linear-gradient(135deg, var(--blue-50), #e8f0fb);
-  border: 1px solid var(--blue-100);
-  border-left: 4px solid var(--blue-500);
-  border-radius: var(--radius);
-  padding: 14px 18px;
-  margin-bottom: 14px;
-  gap: 28px; flex-wrap: wrap;
-}
-.info-box.show { display: flex; }
-.info-item { display: flex; flex-direction: column; gap: 2px; }
-.info-item .lbl { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
-.info-item .val { font-size: 17px; font-weight: 900; color: var(--blue-700); }
-.info-item.danger .val { color: var(--red); }
-
-/* ── BUTTONS ── */
-.btn {
-  padding: 9px 22px;
-  border: none; border-radius: var(--radius-sm);
-  font-family: 'Lato', sans-serif;
-  font-size: 13px; font-weight: 700;
-  cursor: pointer; letter-spacing: 0.3px;
-  transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
-}
-.btn:active { transform: scale(0.97); }
-.btn-primary {
-  background: linear-gradient(135deg, var(--blue-500), var(--blue-600));
-  color: #fff; box-shadow: 0 2px 8px rgba(31,90,170,0.3);
-}
-.btn-primary:hover { opacity: 0.9; box-shadow: 0 4px 14px rgba(31,90,170,0.35); }
-.btn-gold {
-  background: linear-gradient(135deg, var(--gold), #a87015);
-  color: #fff;
-}
-.btn-danger { background: var(--red); color: #fff; }
-.btn-sm { padding: 5px 12px; font-size: 12px; }
-.btn-outline {
-  background: transparent;
-  border: 1px solid var(--blue-400);
-  color: var(--blue-500);
-}
-.btn-outline:hover { background: var(--blue-50); }
-.form-actions { margin-top: 18px; display: flex; gap: 10px; align-items: center; }
-
-/* ── TABLE ── */
-.table-wrap { overflow-x: auto; border-radius: var(--radius); box-shadow: var(--shadow-sm); }
-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-thead th {
-  background: var(--blue-800);
-  color: rgba(255,255,255,0.9);
-  padding: 10px 12px;
-  text-align: left; font-weight: 700;
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px;
-  white-space: nowrap;
-}
-thead th:first-child { border-radius: var(--radius) 0 0 0; }
-thead th:last-child  { border-radius: 0 var(--radius) 0 0; }
-tbody tr:nth-child(even) { background: var(--blue-50); }
-tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
-tbody tr:hover { background: #deeaf8; }
-.empty-row td { text-align: center; color: var(--muted); padding: 32px; font-style: italic; }
-
-/* ── BADGES ── */
-.badge {
-  display: inline-block; padding: 3px 9px;
-  border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
-}
-.badge-settled   { background: var(--green-lt); color: var(--green); }
-.badge-pending   { background: var(--amber-lt); color: var(--amber); }
-.badge-advance   { background: var(--blue-100); color: var(--blue-700); }
-.badge-partial   { background: #fde8d3; color: #7a3d00; }
-.badge-issued    { background: #e2d9f3; color: #4a235a; }
-.badge-cleared   { background: var(--green-lt); color: var(--green); }
-.badge-cancelled { background: var(--red-lt); color: var(--red); }
-.badge-blue      { background: var(--blue-100); color: var(--blue-700); }
-
-/* ── TOAST ── */
-.toast {
-  position: fixed; bottom: 24px; right: 24px;
-  background: var(--blue-700); color: #fff;
-  padding: 11px 22px; border-radius: var(--radius);
-  font-size: 13px; font-weight: 700;
-  box-shadow: var(--shadow-lg);
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.3s, transform 0.3s;
-  transform: translateY(10px);
-  z-index: 9999;
-}
-.toast.show { opacity: 1; transform: translateY(0); }
-.toast.toast-err { background: var(--red); }
-
-/* ── AMOUNT COLORS ── */
-.amt-red   { color: var(--red);   font-weight: 700; }
-.amt-blue  { color: var(--blue-600); font-weight: 700; }
-.amt-green { color: var(--green); font-weight: 700; }
-
-/* ── MISC ── */
-hr.divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
-select.inline-sel {
-  border: 1px solid var(--border); border-radius: 4px;
-  padding: 4px 8px; font-family: 'Lato', sans-serif;
-  font-size: 12px; background: var(--blue-50);
-}
-
-
+.print-header{display:none;text-align:center;margin-bottom:20px;}
+.print-header h1{font-size:18px;font-weight:900;color:#0a1628;}
+.print-header p{font-size:13px;color:#555;}
 </style>
 </head>
 <body>
 <div id="app-header"></div>
 
 <div class="page-wrap">
-  <div class="page-title"><h2>📊 Outstanding Summary</h2><div class="title-line"></div></div>
+  <div class="print-header">
+    <h1>Vali East Northern Division MPCS Ltd</h1>
+    <p>Point Pedro Road, Avarankal, Puttur, Atchuvely</p>
+    <h2 style="margin-top:10px;font-size:15px;">Outstanding Summary Report</h2>
+    <p id="printDate"></p>
+  </div>
+
+  <div class="page-title">
+    <h2>📊 Outstanding Summary</h2>
+    <div class="title-line"></div>
+  </div>
+
   <div class="stat-row" id="statRow"></div>
-  <div class="card" style="padding:14px 18px;">
-    <div style="display:flex;align-items:center;gap:14px;">
+
+  <div class="card no-print" style="padding:14px 18px;">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
       <span style="font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;">Filter:</span>
-      <select id="f-status" class="inline-sel" onchange="renderOutTable()"><option value="">All Statuses</option><option>Pending</option><option>Settled</option><option>Advance</option></select>
+      <input type="text" class="inline-search" id="f-name" placeholder="🔍 Search by supplier name..." oninput="renderOutTable()"/>
+      <select id="f-status" class="inline-sel" onchange="renderOutTable()">
+        <option value="">All Statuses</option>
+        <option>Pending</option>
+        <option>Settled</option>
+        <option>Advance</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="printReport()" style="margin-left:auto;">🖨 Print</button>
     </div>
   </div>
+
   <div class="card">
     <div class="card-title">Supplier Outstanding Balances</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>#</th><th>Supplier Name</th><th>Opening Bal. (LKR)</th><th>Total Purchases (LKR)</th><th>Total Paid (LKR)</th><th>Outstanding (LKR)</th><th>Status</th></tr></thead>
-      <tbody id="outTable"><tr class="empty-row"><td colspan="7">No data yet.</td></tr></tbody>
+      <thead><tr><th>#</th><th>Supplier Name</th><th>Ledger No</th><th>Opening Bal. (LKR)</th><th>Total Purchases (LKR)</th><th>Total Paid (LKR)</th><th>Outstanding (LKR)</th><th>Status</th></tr></thead>
+      <tbody id="outTable"><tr class="empty-row"><td colspan="8">No data yet.</td></tr></tbody>
+      <tfoot id="outFoot"></tfoot>
     </table></div>
   </div>
 </div>
 <div id="toast" class="toast"></div>
+
 <script>
-const COMPANY = "Vali East Northern Division MPCS Ltd";
-const ADDRESS = "Point Pedro Road, Avarankal, Puttur, Atchuvely";
-const LOGO_URL = "images (1).jfif"; // Set your GitHub raw image URL here
-
-const PAGES = [
-  { file: "index.html",   label: "Dashboard",   icon: "⊞" },
-  { file: "suppliers.html",   label: "Suppliers",   icon: "👤" },
-  { file: "purchases.html",   label: "Purchases",   icon: "🛒" },
-  { file: "payments.html",    label: "Payments",    icon: "💳" },
-  { file: "cheques.html",     label: "Cheques",     icon: "📋" },
-  { file: "outstanding.html", label: "Outstanding", icon: "📊" },
-  { file: "ledger.html",      label: "Ledger",      icon: "📒" },
+const COMPANY="Vali East Northern Division MPCS Ltd";
+const ADDRESS="Point Pedro Road, Avarankal, Puttur, Atchuvely";
+const LOGO_URL="images (1).jfif";
+const PAGES=[
+  {file:"index.html",label:"Dashboard",icon:"⊞"},
+  {file:"suppliers.html",label:"Suppliers",icon:"👤"},
+  {file:"purchases.html",label:"Purchases",icon:"🛒"},
+  {file:"payments.html",label:"Payments",icon:"💳"},
+  {file:"cheques.html",label:"Cheques",icon:"📋"},
+  {file:"outstanding.html",label:"Outstanding",icon:"📊"},
+  {file:"ledger.html",label:"Ledger",icon:"📒"},
+  {file:"summary.html",label:"Summary",icon:"📑"},
 ];
-
-function renderHeader(activePage) {
-  const today = new Date().toLocaleDateString('en-LK', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
-  const logoHTML = LOGO_URL
-    ? `<img src="${LOGO_URL}" alt="Logo" style="height:52px;width:52px;object-fit:contain;border-radius:8px;background:#fff;padding:3px;">`
-    : `<div class="logo-box">VEM</div>`;
-  const navLinks = PAGES.map(p =>
-    `<a href="${p.file}" class="nav-link${activePage===p.file?' active':''}"><span class="nav-icon">${p.icon}</span>${p.label}</a>`
-  ).join('');
-  document.getElementById('app-header').innerHTML = `
-    <header>
-      <div class="header-inner">
-        ${logoHTML}
-        <div class="brand-text"><h1>${COMPANY}</h1><p>${ADDRESS}</p></div>
-        <div class="header-right"><span class="system-label">Supplier Payables System</span><span class="today-date">${today}</span></div>
-      </div>
-      <nav class="main-nav"><div class="nav-inner">${navLinks}</div></nav>
-    </header>`;
+function renderHeader(a){
+  const today=new Date().toLocaleDateString('en-LK',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  const logoHTML=LOGO_URL?`<img src="${LOGO_URL}" alt="Logo" style="height:52px;width:52px;object-fit:contain;border-radius:8px;background:#fff;padding:3px;">`:`<div class="logo-box">VEM</div>`;
+  const navLinks=PAGES.map(p=>`<a href="${p.file}" class="nav-link${a===p.file?' active':''}"><span>${p.icon}</span>${p.label}</a>`).join('');
+  document.getElementById('app-header').innerHTML=`<header><div class="header-inner">${logoHTML}<div class="brand-text"><h1>${COMPANY}</h1><p>${ADDRESS}</p></div><div class="header-right"><span class="system-label">Supplier Payables System</span><span class="today-date">${today}</span></div></div><nav class="main-nav"><div class="nav-inner">${navLinks}</div></nav></header>`;
 }
-
-function getData(k) { try { return JSON.parse(localStorage.getItem('mpcs_'+k)||'[]'); } catch(e){ return []; } }
-function setData(k,v) { localStorage.setItem('mpcs_'+k, JSON.stringify(v)); }
-function getSuppliers() { return getData('suppliers'); }
-function getPurchases() { return getData('purchases'); }
-function getPayments()  { return getData('payments'); }
-function saveSuppliers(d) { setData('suppliers',d); }
-function savePurchases(d) { setData('purchases',d); }
-function savePayments(d)  { setData('payments',d); }
-function fmt(n) { return Number(n||0).toLocaleString('en-LK',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function todayStr() { return new Date().toISOString().split('T')[0]; }
-function getSupplierBalance(sid) {
-  const sup = getSuppliers().find(s=>s.id==sid);
-  if(!sup) return {opening:0,purchases:0,paid:0,outstanding:0};
-  const purchases = getPurchases().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
-  const paid      = getPayments().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
-  return {opening:Number(sup.opening),purchases,paid,outstanding:Number(sup.opening)+purchases-paid};
+function getData(k){try{return JSON.parse(localStorage.getItem('mpcs_'+k)||'[]');}catch(e){return[];}}
+function getSuppliers(){return getData('suppliers');}
+function getPurchases(){return getData('purchases');}
+function getPayments(){return getData('payments');}
+function fmt(n){return Number(n||0).toLocaleString('en-LK',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function getSupplierBalance(sid){
+  const sup=getSuppliers().find(s=>s.id==sid);
+  if(!sup)return{opening:0,purchases:0,paid:0,outstanding:0};
+  const purchases=getPurchases().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
+  const paid=getPayments().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
+  return{opening:Number(sup.opening),purchases,paid,outstanding:Number(sup.opening)+purchases-paid};
 }
-function statusBadge(o) {
-  if(o>0)  return `<span class="badge badge-pending">Pending</span>`;
-  if(o===0) return `<span class="badge badge-settled">Settled</span>`;
-  return `<span class="badge badge-advance">Advance</span>`;
-}
-function toast(msg,isErr=false) {
-  let t=document.getElementById('toast');
-  if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t);}
-  t.textContent=msg; t.className='toast show'+(isErr?' toast-err':'');
-  clearTimeout(t._tid); t._tid=setTimeout(()=>t.classList.remove('show'),2800);
+function statusBadge(o){
+  if(o>0)return`<span class="badge badge-pending">Pending</span>`;
+  if(o===0)return`<span class="badge badge-settled">Settled</span>`;
+  return`<span class="badge badge-advance">Advance</span>`;
 }
 
 renderHeader('outstanding.html');
 
+function printReport(){
+  document.getElementById('printDate').textContent='Printed: '+new Date().toLocaleString('en-LK');
+  window.print();
+}
+
 function renderOutTable(){
   const fStatus=document.getElementById('f-status').value;
+  const fName=(document.getElementById('f-name').value||'').toLowerCase();
   const suppliers=getSuppliers();
-  const all=suppliers.map(s=>({...s,...getSupplierBalance(s.id),status:((b)=>b>0?'Pending':b===0?'Settled':'Advance')(getSupplierBalance(s.id).outstanding)}));
+  let all=suppliers.map(s=>({
+    ...s,
+    ...getSupplierBalance(s.id),
+    status:((b)=>b>0?'Pending':b===0?'Settled':'Advance')(getSupplierBalance(s.id).outstanding)
+  }));
+
   const totalPurch=all.reduce((a,s)=>a+s.purchases,0);
   const totalPaid=all.reduce((a,s)=>a+s.paid,0);
   const totalOut=all.reduce((a,s)=>a+s.outstanding,0);
+  const totalOpening=all.reduce((a,s)=>a+s.opening,0);
+
   document.getElementById('statRow').innerHTML=`
     <div class="stat-card blue"><p>Total Suppliers</p><h3>${suppliers.length}</h3></div>
     <div class="stat-card gold"><p>Total Purchases</p><h3 class="gold">LKR ${fmt(totalPurch)}</h3></div>
     <div class="stat-card green"><p>Total Paid</p><h3 class="green">LKR ${fmt(totalPaid)}</h3></div>
     <div class="stat-card red"><p>Total Outstanding</p><h3 class="red">LKR ${fmt(totalOut)}</h3></div>
     <div class="stat-card"><p>Pending / Settled</p><h3>${all.filter(s=>s.outstanding>0).length} / ${all.filter(s=>s.outstanding===0).length}</h3></div>`;
-  let rows=fStatus?all.filter(r=>r.status===fStatus):all;
+
+  if(fStatus) all=all.filter(r=>r.status===fStatus);
+  if(fName) all=all.filter(r=>r.name.toLowerCase().includes(fName));
+
   const tbody=document.getElementById('outTable');
-  if(!rows.length){tbody.innerHTML='<tr class="empty-row"><td colspan="7">No records found.</td></tr>';return;}
-  tbody.innerHTML=rows.map((s,i)=>`<tr><td>${i+1}</td><td><strong>${s.name}</strong></td><td>${fmt(s.opening)}</td><td>${fmt(s.purchases)}</td><td>${fmt(s.paid)}</td><td class="${s.outstanding>0?'amt-red':s.outstanding<0?'amt-blue':'amt-green'}">${fmt(s.outstanding)}</td><td>${statusBadge(s.outstanding)}</td></tr>`).join('');
+  const tfoot=document.getElementById('outFoot');
+  if(!all.length){tbody.innerHTML='<tr class="empty-row"><td colspan="8">No records found.</td></tr>';tfoot.innerHTML='';return;}
+
+  tbody.innerHTML=all.map((s,i)=>`<tr>
+    <td>${i+1}</td>
+    <td><strong>${s.name}</strong></td>
+    <td>${s.ledger||'—'}</td>
+    <td class="amt-blue">${fmt(s.opening)}</td>
+    <td class="amt-blue">${fmt(s.purchases)}</td>
+    <td class="amt-green">${fmt(s.paid)}</td>
+    <td class="${s.outstanding>0?'amt-red':s.outstanding<0?'amt-blue':'amt-green'}"><strong>${fmt(s.outstanding)}</strong></td>
+    <td>${statusBadge(s.outstanding)}</td>
+  </tr>`).join('');
+
+  const fTotal=all.reduce((a,s)=>a+s.outstanding,0);
+  tfoot.innerHTML=`<tr>
+    <td colspan="3">TOTAL</td>
+    <td>${fmt(all.reduce((a,s)=>a+s.opening,0))}</td>
+    <td>${fmt(all.reduce((a,s)=>a+s.purchases,0))}</td>
+    <td>${fmt(all.reduce((a,s)=>a+s.paid,0))}</td>
+    <td>${fmt(fTotal)}</td>
+    <td></td>
+  </tr>`;
 }
 renderOutTable();
-
 </script>
 </body>
 </html>
