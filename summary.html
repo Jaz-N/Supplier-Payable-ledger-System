@@ -583,9 +583,8 @@ function renderAll(){
     const returnAmt   = mPurch.filter(p=>p.type==='Return Goods (F-19)').reduce((a,p)=>a+Number(p.amount),0);
     const discAmt     = mPurch.filter(p=>p.type==='Discount Received').reduce((a,p)=>a+Number(p.amount),0);
 
-    const totalPurch = allPurchases.filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
-    const totalPaid  = allPayments.filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
-    const closing = opening + totalPurch - totalPaid;
+    // Closing Balance = Opening + Purchase + Journal − Cheque Paid − Returns (F-19) − Disc. Received
+    const closing = opening + purchaseAmt + journalAmt - chqPaid - returnAmt - discAmt;
 
     rows.push({s,opening,purchaseAmt,journalAmt,chqPaid,returnAmt,discAmt,closing});
   });
