@@ -2,800 +2,221 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Supplier Summary – MPCS Payables</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Outstanding – MPCS Payables</title>
 <style>
-/* ── CSS Variables ───────────────────────────────────────────── */
-:root{
-  --ink:#0c1a2e;
-  --ink-2:#2d4060;
-  --ink-3:#5a728a;
-  --ink-4:#8fa3b8;
-  --rule:#d6e0ea;
-  --surface:#ffffff;
-  --bg:#eef2f7;
-  --accent:#1040a0;
-  --accent-dk:#0b2d75;
-  --accent-lt:#dde8f8;
-  --gold:#a06c00;
-  --gold-lt:#fdf3d8;
-  --red:#991b1b;
-  --red-lt:#fef2f2;
-  --green:#155a30;
-  --green-lt:#edf7f1;
-  --shadow:0 1px 3px rgba(12,26,46,.08),0 4px 16px rgba(12,26,46,.06);
-  --radius:6px;
-  --ff-sans:'IBM Plex Sans',sans-serif;
-  --ff-serif:'IBM Plex Serif',serif;
-  --ff-mono:'IBM Plex Mono',monospace;
-}
-/* ── Reset ───────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@700&display=swap');
+:root{--blue-900:#0a1628;--blue-800:#0d2244;--blue-700:#103060;--blue-600:#1a4a8a;--blue-500:#1f5aaa;--blue-400:#3a7bd5;--blue-100:#ddeeff;--blue-50:#f0f6ff;--gold:#c8941a;--bg:#f2f5fa;--surface:#ffffff;--border:#d0dae8;--text:#12243a;--muted:#5a6e85;--red:#c0392b;--red-lt:#fdecea;--green:#1a6b3c;--green-lt:#e3f5ea;--amber:#b45309;--amber-lt:#fef3c7;--shadow-sm:0 1px 4px rgba(10,22,40,0.08);--shadow-lg:0 8px 32px rgba(10,22,40,0.14);--radius:8px;--radius-sm:5px;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:var(--ff-sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;min-height:100vh;}
-/* ── App Header ──────────────────────────────────────────────── */
-#app-header{}
-header{background:var(--accent-dk);box-shadow:0 2px 12px rgba(0,0,0,.2);}
-.header-inner{display:flex;align-items:center;gap:14px;padding:10px 28px;border-bottom:1px solid rgba(255,255,255,.08);}
-.logo-img{height:48px;width:48px;object-fit:contain;border-radius:6px;background:#fff;padding:3px;}
-.brand h1{font-family:var(--ff-serif);font-size:15px;font-weight:700;color:#fff;letter-spacing:.3px;}
-.brand p{font-size:11px;color:rgba(255,255,255,.5);margin-top:1px;}
-.header-badge{margin-left:auto;text-align:right;}
-.badge-label{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#f0c040;}
-.badge-date{display:block;font-size:11px;color:rgba(255,255,255,.45);margin-top:1px;}
-.main-nav{background:linear-gradient(to bottom,#0e3480,#0b2d75);padding:0 20px;border-top:1px solid rgba(255,255,255,.06);}
-.nav-inner{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;}
+body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;}
+header{background:linear-gradient(135deg,var(--blue-900) 0%,var(--blue-800) 60%,var(--blue-700) 100%);box-shadow:var(--shadow-lg);position:sticky;top:0;z-index:100;}
+.header-inner{display:flex;align-items:center;gap:16px;padding:12px 28px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.brand-text h1{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#fff;line-height:1.2;}
+.brand-text p{font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;}
+.header-right{margin-left:auto;text-align:right;display:flex;flex-direction:column;gap:2px;}
+.system-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--gold);}
+.today-date{font-size:11px;color:rgba(255,255,255,0.5);}
+.main-nav{background:var(--blue-800);padding:0 20px;}
+.nav-inner{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;}
 .nav-inner::-webkit-scrollbar{display:none;}
-.nav-link{display:flex;align-items:center;gap:6px;padding:9px 16px;text-decoration:none;color:rgba(255,255,255,.55);font-size:12px;font-weight:600;white-space:nowrap;border-bottom:3px solid transparent;transition:all .15s;letter-spacing:.2px;}
-.nav-link:hover{color:rgba(255,255,255,.88);border-bottom-color:rgba(255,255,255,.2);}
-.nav-link.active{color:#fff;border-bottom-color:#f0c040;}
-
-/* ── Page Wrapper ────────────────────────────────────────────── */
-.page-wrap{padding:24px 28px;max-width:1440px;margin:0 auto;}
-
-/* ── Page Title ──────────────────────────────────────────────── */
-.page-title{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
-.page-title h2{font-family:var(--ff-serif);font-size:19px;font-weight:700;color:var(--accent-dk);white-space:nowrap;}
-.page-title-rule{flex:1;height:1px;background:var(--rule);}
-
-/* ── Cards ───────────────────────────────────────────────────── */
-.card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:18px 22px;box-shadow:var(--shadow);margin-bottom:18px;}
-.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--rule);}
-.card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--accent);display:flex;align-items:center;gap:8px;}
-.card-title-badge{background:var(--accent-lt);color:var(--accent);padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;}
-
-/* ── Controls Bar ────────────────────────────────────────────── */
-.controls-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.ctrl-group{display:flex;align-items:center;gap:8px;}
-.ctrl-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-3);}
-input[type=month],input[type=text]{border:1px solid var(--rule);border-radius:4px;padding:7px 11px;font-family:var(--ff-sans);font-size:13px;color:var(--ink);background:#f7fafd;outline:none;transition:border-color .15s;}
-input[type=month]:focus,input[type=text]:focus{border-color:var(--accent);}
-input[type=text]{min-width:210px;}
-
-/* ── Buttons ─────────────────────────────────────────────────── */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border:none;border-radius:4px;font-family:var(--ff-sans);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.3px;transition:all .15s;}
-.btn-primary{background:var(--accent);color:#fff;}
-.btn-primary:hover{background:var(--accent-dk);}
-.btn-gold{background:var(--gold);color:#fff;}
-.btn-gold:hover{filter:brightness(1.1);}
-.btn-outline{background:transparent;border:1px solid var(--rule);color:var(--ink-2);}
-.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
-.ml-auto{margin-left:auto;}
-
-/* ── Tabs ────────────────────────────────────────────────────── */
-.tab-bar{display:flex;gap:0;border-bottom:2px solid var(--rule);margin-bottom:18px;}
-.tab-btn{padding:9px 22px;border:none;background:transparent;color:var(--ink-3);font-family:var(--ff-sans);font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;letter-spacing:.2px;}
-.tab-btn:hover{color:var(--accent);}
-.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700;}
-.tab-panel{display:none;}
-.tab-panel.active{display:block;}
-
-/* ── Tables ──────────────────────────────────────────────────── */
-.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--rule);}
+.nav-link{display:flex;align-items:center;gap:6px;padding:10px 16px;text-decoration:none;color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;white-space:nowrap;border-bottom:3px solid transparent;transition:color 0.15s,border-color 0.15s;}
+.nav-link:hover{color:rgba(255,255,255,0.9);}
+.nav-link.active{color:#fff;border-bottom-color:var(--gold);}
+.page-wrap{padding:24px 28px;max-width:1280px;}
+.page-title{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.page-title h2{font-family:'Playfair Display',serif;font-size:20px;color:var(--blue-700);}
+.title-line{flex:1;height:2px;background:linear-gradient(90deg,var(--border) 0%,transparent 100%);}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
+.card-title{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--blue-600);margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--blue-50);}
+.stat-row{display:flex;gap:14px;margin-bottom:22px;flex-wrap:wrap;}
+.stat-card{flex:1;min-width:160px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;border-top:4px solid var(--blue-500);box-shadow:var(--shadow-sm);}
+.stat-card.red{border-top-color:var(--red);}
+.stat-card.gold{border-top-color:var(--gold);}
+.stat-card.green{border-top-color:var(--green);}
+.stat-card.blue{border-top-color:var(--blue-400);}
+.stat-card p{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:6px;}
+.stat-card h3{font-size:22px;font-weight:900;color:var(--text);}
+.stat-card h3.red{color:var(--red);}
+.stat-card h3.blue{color:var(--blue-600);}
+.stat-card h3.green{color:var(--green);}
+.stat-card h3.gold{color:var(--amber);}
+.btn{padding:9px 22px;border:none;border-radius:var(--radius-sm);font-family:'Lato',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity 0.15s,transform 0.1s;}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:linear-gradient(135deg,var(--blue-500),var(--blue-600));color:#fff;}
+.btn-outline{background:transparent;border:1px solid var(--blue-400);color:var(--blue-500);}
+.btn-sm{padding:6px 14px;font-size:12px;}
+.table-wrap{overflow-x:auto;border-radius:var(--radius);}
 table{width:100%;border-collapse:collapse;font-size:13px;}
-thead th{
-  background:var(--accent-dk);
-  color:rgba(255,255,255,.92);
-  padding:9px 13px;
-  text-align:left;
-  font-weight:600;
-  font-size:10.5px;
-  text-transform:uppercase;
-  letter-spacing:.8px;
-  white-space:nowrap;
-  border-right:1px solid rgba(255,255,255,.08);
-}
-thead th:last-child{border-right:none;}
-.th-right{text-align:right!important;}
-tbody tr{border-bottom:1px solid var(--rule);}
-tbody tr:last-child{border-bottom:none;}
-tbody tr:nth-child(even){background:#f6f9fd;}
-tbody tr:hover{background:#eaf1fb;}
-tbody td{padding:8px 13px;border-right:1px solid var(--rule);vertical-align:middle;}
-tbody td:last-child{border-right:none;}
-.td-right{text-align:right;}
-tfoot tr{background:var(--accent-dk)!important;}
-tfoot td{padding:10px 13px;font-weight:700;font-size:12px;color:#fff;border-right:1px solid rgba(255,255,255,.1);letter-spacing:.3px;}
-tfoot td:last-child{border-right:none;}
-.empty-row td{text-align:center;color:var(--ink-4);padding:40px;font-style:italic;}
-
-/* ── Amount Classes ──────────────────────────────────────────── */
-.amt{font-family:var(--ff-mono);font-size:12.5px;}
-.amt-dr{color:var(--red);font-weight:600;}
-.amt-cr{color:var(--green);font-weight:600;}
-.amt-blue{color:var(--accent);font-weight:600;}
-.amt-neutral{color:var(--ink-2);font-weight:500;}
-
-/* ── Supplier Name Cell ──────────────────────────────────────── */
-.sup-name{font-weight:600;color:var(--ink);}
-.sup-ledger{font-size:11px;color:var(--ink-4);font-family:var(--ff-mono);}
-
-/* ── Balance Formula Row (detail view) ──────────────────────── */
-.formula-badge{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;display:inline-block;padding:1px 6px;border-radius:3px;}
-.badge-debit{background:var(--accent-lt);color:var(--accent);}
-.badge-credit{background:var(--green-lt);color:var(--green);}
-
-/* ── Quick Balance Card View ─────────────────────────────────── */
-.qb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:20px;}
-.qb-card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
-.qb-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent);}
-.qb-card.credit-bal::before{background:var(--green);}
-.qb-card.debit-bal::before{background:var(--red);}
-.qb-sup{font-weight:700;font-size:13px;color:var(--ink);margin-bottom:2px;}
-.qb-ledger{font-size:11px;color:var(--ink-4);font-family:var(--ff-mono);}
-.qb-bal{font-family:var(--ff-mono);font-size:20px;font-weight:700;margin-top:10px;}
-.qb-bal.red{color:var(--red);}
-.qb-bal.green{color:var(--green);}
-.qb-bal.zero{color:var(--ink-4);}
-
-/* ── Quick Balance Table ─────────────────────────────────────── */
-#tab-quick .table-wrap{max-width:620px;}
-
-/* ── Signature Row ───────────────────────────────────────────── */
-.signature-row{display:flex;gap:24px;margin-top:40px;padding-top:24px;border-top:1px solid var(--rule);flex-wrap:wrap;}
-.sig-box{flex:1;min-width:160px;text-align:center;}
-.sig-line{border-top:1.5px solid var(--ink-3);margin-top:44px;padding-top:6px;font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.8px;}
-
-/* ── Print Header (hidden on screen) ────────────────────────── */
-.print-header{display:none;}
-
-/* ── Section subtitle ─────────────────────────────────────────── */
-.section-note{font-size:12px;color:var(--ink-3);margin-bottom:14px;display:flex;align-items:center;gap:6px;}
-.formula-bar{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--accent-lt);border:1px solid #b8d0f0;border-radius:4px;font-size:12px;color:var(--accent-dk);font-weight:600;margin-bottom:16px;flex-wrap:wrap;}
-.formula-bar span{opacity:.6;font-weight:400;}
-
-/* ══════════════════════════════════════════════════════════════
-   PRINT STYLES
-═══════════════════════════════════════════════════════════════ */
+thead th{background:var(--blue-800);color:rgba(255,255,255,0.9);padding:10px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;white-space:nowrap;}
+thead th:first-child{border-radius:var(--radius) 0 0 0;}
+thead th:last-child{border-radius:0 var(--radius) 0 0;}
+tbody tr:nth-child(even){background:var(--blue-50);}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--border);}
+tbody tr:hover{background:#deeaf8;}
+tfoot td{background:var(--blue-800);color:#fff;padding:10px 12px;font-weight:900;}
+.empty-row td{text-align:center;color:var(--muted);padding:32px;font-style:italic;}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-settled{background:var(--green-lt);color:var(--green);}
+.badge-pending{background:var(--amber-lt);color:var(--amber);}
+.badge-advance{background:var(--blue-100);color:var(--blue-700);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--blue-700);color:#fff;padding:11px 22px;border-radius:var(--radius);font-size:13px;font-weight:700;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:opacity 0.3s,transform 0.3s;transform:translateY(10px);z-index:9999;}
+.toast.show{opacity:1;transform:translateY(0);}
+.amt-red{color:var(--red);font-weight:700;}
+.amt-blue{color:var(--blue-600);font-weight:700;}
+.amt-green{color:var(--green);font-weight:700;}
+select.inline-sel{border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-family:'Lato',sans-serif;font-size:12px;background:var(--blue-50);}
+input.inline-search{border:1px solid var(--border);border-radius:4px;padding:5px 10px;font-family:'Lato',sans-serif;font-size:13px;background:var(--blue-50);min-width:200px;}
+/* Print styles */
 @media print{
-  /* ── Page setup: A4 landscape ── */
-  @page{size:A4 landscape;margin:10mm;}
-
-  /* Hide screen-only elements */
-  #app-header,.no-print,.tab-bar,.controls-bar,.qb-grid{display:none!important;}
-
-  /* Reset body */
-  body{background:#fff;font-size:11pt;color:#000;}
-  .page-wrap{padding:0;max-width:none;width:100%;}
-
-  /* Print header shows */
-  .print-header{
-    display:block!important;
-    text-align:center;
-    padding-bottom:10pt;
-    margin-bottom:14pt;
-    border-bottom:2pt solid #0b2d75;
-    page-break-inside:avoid;
-  }
-  .ph-company{font-family:var(--ff-serif);font-size:15pt;font-weight:700;color:#0b2d75;letter-spacing:.5px;}
-  .ph-address{font-size:9pt;color:#444;margin-top:2pt;}
-  .ph-report{font-size:12pt;font-weight:700;color:#0b2d75;margin-top:8pt;text-transform:uppercase;letter-spacing:.5px;}
-  .ph-meta{font-size:9pt;color:#555;margin-top:3pt;}
-  .ph-period{display:inline-block;margin-top:5pt;background:#0b2d75;color:#fff;padding:2pt 12pt;border-radius:3pt;font-size:9pt;font-weight:700;letter-spacing:.5px;}
-
-  /* Cards in print */
-  .card{
-    box-shadow:none;
-    border:1pt solid #c8d8e8;
-    border-radius:0;
-    padding:10pt 12pt;
-    margin-bottom:12pt;
-    page-break-inside:avoid;
-  }
-  .card-head{padding-bottom:6pt;margin-bottom:8pt;}
-  .card-title{font-size:9pt;color:#0b2d75;}
-
-  /* Section separators */
-  .print-section-break{
-    display:block;
-    page-break-before:always;
-  }
-  .print-section-title{
-    font-family:var(--ff-serif);
-    font-size:13pt;
-    font-weight:700;
-    color:#0b2d75;
-    border-bottom:1.5pt solid #0b2d75;
-    padding-bottom:5pt;
-    margin-bottom:10pt;
-    text-transform:uppercase;
-    letter-spacing:.5px;
-  }
-
-  /* ── KEY FIX: Remove overflow clipping so full table width prints ── */
-  .table-wrap{
-    overflow:visible!important;
-    overflow-x:visible!important;
-    max-width:none!important;
-    width:100%!important;
-    border:1pt solid #b0c4d8;
-    border-radius:0;
-  }
-  /* Quick balance table also needs the fix */
-  .qb-table-wrap{
-    overflow:visible!important;
-    overflow-x:visible!important;
-    max-width:none!important;
-    width:100%!important;
-    display:block!important;
-  }
-
-  /* Tables: full width, cells wrap, no white-space clipping */
-  table{
-    font-size:9pt;
-    width:100%!important;
-    table-layout:auto;
-  }
-  thead th{
-    background:#0b2d75!important;
-    color:#fff!important;
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-    padding:6pt 8pt;
-    font-size:8pt;
-    white-space:normal;        /* allow wrapping in print */
-  }
-  /* Repeat header on every printed page */
-  thead{display:table-header-group;}
-
-  tbody td{
-    padding:5pt 8pt;
-    border-right:0.5pt solid #d0dce8;
-    word-break:break-word;     /* wrap long content */
-    white-space:normal;
-  }
-  /* Prevent rows from splitting across pages */
-  tbody tr{page-break-inside:avoid;}
-  tbody tr:nth-child(even){background:#f0f5fb!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  tbody tr:hover{background:inherit!important;}
-
-  tfoot td{
-    background:#0b2d75!important;
-    color:#fff!important;
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-    padding:6pt 8pt;
-    font-size:9.5pt;
-  }
-  tfoot tr{page-break-inside:avoid;}
-
-  .amt{font-size:9pt;}
-
-  /* Signature */
-  .signature-row{margin-top:24pt;padding-top:16pt;page-break-inside:avoid;}
-  .sig-line{font-size:9pt;margin-top:36pt;}
-
-  /* Formula bar hidden in print */
-  .formula-bar{display:none!important;}
-  .section-note{display:none!important;}
+  #app-header,.no-print{display:none!important;}
+  .page-wrap{padding:0;max-width:100%;}
+  .stat-row{display:none;}
+  .card{box-shadow:none;border:1px solid #ccc;}
+  .print-header{display:block!important;}
 }
-/* qb-table-wrap hidden on screen */
-.qb-table-wrap{display:none;}
+.print-header{display:none;text-align:center;margin-bottom:20px;}
+.print-header h1{font-size:18px;font-weight:900;color:#0a1628;}
+.print-header p{font-size:13px;color:#555;}
 </style>
 </head>
 <body>
-
-<!-- ═══════════ APP HEADER ═══════════ -->
 <div id="app-header"></div>
 
 <div class="page-wrap">
-
-  <!-- PRINT HEADER (hidden on screen) -->
-  <div class="print-header" id="printHeader">
-    <div class="ph-company">Vali East Northern Division MPCS Ltd</div>
-    <div class="ph-address">Point Pedro Road, Avarankal, Puttur, Atchuvely</div>
-    <div class="ph-report" id="phReport">Supplier Payables Summary</div>
-    <div class="ph-meta" id="phMeta"></div>
-    <div class="ph-period" id="phPeriod"></div>
+  <div class="print-header">
+    <h1>Vali East Northern Division MPCS Ltd</h1>
+    <p>Point Pedro Road, Avarankal, Puttur, Atchuvely</p>
+    <h2 style="margin-top:10px;font-size:15px;">Outstanding Summary Report</h2>
+    <p id="printDate"></p>
   </div>
 
-  <!-- Page Title -->
-  <div class="page-title no-print">
-    <h2>Supplier Summary</h2>
-    <div class="page-title-rule"></div>
+  <div class="page-title">
+    <h2>📊 Outstanding Summary</h2>
+    <div class="title-line"></div>
   </div>
 
-  <!-- Controls -->
-  <div class="card no-print" style="padding:14px 20px;margin-bottom:16px;">
-    <div class="controls-bar">
-      <div class="ctrl-group">
-        <span class="ctrl-label">Period</span>
-        <input type="month" id="sel-month" onchange="renderAll()"/>
-      </div>
-      <div class="ctrl-group">
-        <span class="ctrl-label">Supplier</span>
-        <input type="text" id="f-name" placeholder="Search by name…" oninput="renderAll()"/>
-      </div>
-      <div class="ctrl-group ml-auto" style="gap:8px;">
-        <button class="btn btn-outline" onclick="printActive()">🖨 Print Current View</button>
-        <button class="btn btn-gold" onclick="printAll()">🖨 Print All Reports</button>
-      </div>
+  <div class="stat-row" id="statRow"></div>
+
+  <div class="card no-print" style="padding:14px 18px;">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <span style="font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;">Filter:</span>
+      <input type="text" class="inline-search" id="f-name" placeholder="🔍 Search by supplier name..." oninput="renderOutTable()"/>
+      <select id="f-status" class="inline-sel" onchange="renderOutTable()">
+        <option value="">All Statuses</option>
+        <option>Pending</option>
+        <option>Settled</option>
+        <option>Advance</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="printReport()" style="margin-left:auto;">🖨 Print</button>
     </div>
   </div>
 
-  <!-- Tabs -->
-  <div class="tab-bar no-print">
-    <button class="tab-btn active" onclick="switchTab('detail')">📋 Detailed Summary</button>
-    <button class="tab-btn" onclick="switchTab('quick')">⚡ Quick Balance</button>
-    <button class="tab-btn" onclick="switchTab('register')">📖 Transaction Register</button>
+  <div class="card">
+    <div class="card-title">Supplier Outstanding Balances</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Supplier Name</th><th>Ledger No</th><th>Opening Bal. (LKR)</th><th>Total Purchases (LKR)</th><th>Total Paid (LKR)</th><th>Outstanding (LKR)</th><th>Status</th></tr></thead>
+      <tbody id="outTable"><tr class="empty-row"><td colspan="8">No data yet.</td></tr></tbody>
+      <tfoot id="outFoot"></tfoot>
+    </table></div>
   </div>
-
-  <!-- ═══ TAB 1: DETAILED SUMMARY ═══ -->
-  <div id="tab-detail" class="tab-panel active">
-
-    <div class="print-section-title" style="display:none;" id="pst-detail">Detailed Supplier Account Summary</div>
-
-   
-
-    <div class="card">
-      <div class="card-head">
-        <div class="card-title">
-          Supplier Account Summary
-          <span class="card-title-badge" id="monthLabel1">All Periods</span>
-        </div>
-        <span style="font-size:11px;color:var(--ink-4);" class="no-print" id="rowCount1"></span>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:36px;">#</th>
-              <th>Supplier Name</th>
-              <th>Ledger No</th>
-              <th class="th-right">Opening Bal.</th>
-              <th class="th-right">Purchase</th>
-              <th class="th-right">Journal</th>
-              <th class="th-right">Cheque Paid(F-08)</th>
-              <th class="th-right">Returns (F-19)</th>
-              <th class="th-right">Disc. Received</th>
-              <th class="th-right" style="background:#0a2460;">Closing Balance</th>
-            </tr>
-          </thead>
-          <tbody id="detailTable"></tbody>
-          <tfoot id="detailFoot"></tfoot>
-        </table>
-      </div>
-    </div>
-
-    <div class="signature-row">
-      <div class="sig-box"><div class="sig-line">Prepared By</div></div>
-      <div class="sig-box"><div class="sig-line">Verified By</div></div>
-      <div class="sig-box"><div class="sig-line">Accountant</div></div>
-      <div class="sig-box"><div class="sig-line">General Manager</div></div>
-    </div>
-  </div>
-
-  <!-- ═══ TAB 2: QUICK BALANCE ═══ -->
-  <div id="tab-quick" class="tab-panel">
-
-    <div class="print-section-title" style="display:none;" id="pst-quick">Supplier Closing Balances — Quick View</div>
-
-    <!-- Cards grid (screen only) -->
-    <div class="qb-grid no-print" id="qbCards"></div>
-
-    <!-- Print-ready table for Quick Balance -->
-    <div class="card">
-      <div class="card-head">
-        <div class="card-title">
-          Supplier Closing Balances
-          <span class="card-title-badge" id="monthLabel2">All Periods</span>
-        </div>
-        <span style="font-size:11px;color:var(--ink-4);" class="no-print" id="rowCount2"></span>
-      </div>
-
-      <div class="table-wrap qb-table-wrap" id="qbTableWrap" style="max-width:700px;">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:40px;">#</th>
-              <th>Supplier Name</th>
-              <th>Ledger No</th>
-              <th class="th-right" style="width:180px;">Closing Balance (LKR)</th>
-            </tr>
-          </thead>
-          <tbody id="quickTable"></tbody>
-          <tfoot id="quickFoot"></tfoot>
-        </table>
-      </div>
-
-      <!-- Screen table (always visible on screen) -->
-      <div class="table-wrap no-print" style="max-width:700px;">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:40px;">#</th>
-              <th>Supplier Name</th>
-              <th>Ledger No</th>
-              <th class="th-right" style="width:180px;">Closing Balance (LKR)</th>
-            </tr>
-          </thead>
-          <tbody id="quickTableScreen"></tbody>
-          <tfoot id="quickFootScreen"></tfoot>
-        </table>
-      </div>
-    </div>
-
-    <div class="signature-row">
-      <div class="sig-box"><div class="sig-line">Prepared By</div></div>
-      <div class="sig-box"><div class="sig-line">Verified By</div></div>
-      <div class="sig-box"><div class="sig-line">Accountant</div></div>
-      <div class="sig-box"><div class="sig-line">General Manager</div></div>
-    </div>
-  </div>
-
-  <!-- ═══ TAB 3: TRANSACTION REGISTER ═══ -->
-  <div id="tab-register" class="tab-panel">
-
-    <div class="print-section-title" style="display:none;" id="pst-reg">Transaction Register</div>
-
-    <div class="card">
-      <div class="card-head">
-        <div class="card-title">
-          Transaction Register
-          <span class="card-title-badge" id="monthLabel3">All Periods</span>
-        </div>
-        <span style="font-size:11px;color:var(--ink-4);" class="no-print" id="rowCount3"></span>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:36px;">#</th>
-              <th>Date</th>
-              <th>Supplier</th>
-              <th>Ledger No</th>
-              <th>Type</th>
-              <th>Ref / Invoice</th>
-              <th>Description</th>
-              <th class="th-right">Debit (LKR)</th>
-              <th class="th-right">Credit (LKR)</th>
-            </tr>
-          </thead>
-          <tbody id="regTable"></tbody>
-          <tfoot id="regFoot"></tfoot>
-        </table>
-      </div>
-    </div>
-
-    <div class="signature-row">
-      <div class="sig-box"><div class="sig-line">Prepared By</div></div>
-      <div class="sig-box"><div class="sig-line">Verified By</div></div>
-      <div class="sig-box"><div class="sig-line">Accountant</div></div>
-      <div class="sig-box"><div class="sig-line">General Manager</div></div>
-    </div>
-  </div>
-
-</div><!-- /page-wrap -->
+</div>
+<div id="toast" class="toast"></div>
 
 <script>
-/* ── Constants ─────────────────────────────────────────────── */
-const COMPANY = "Vali East Northern Division MPCS Ltd";
-const ADDRESS = "Point Pedro Road, Avarankal, Puttur, Atchuvely";
-const LOGO_URL = "images (1).jfif";
-const PAGES = [
-  {file:"index.html",     label:"Dashboard",   icon:"⊞"},
-  {file:"suppliers.html", label:"Suppliers",   icon:"👤"},
-  {file:"purchases.html", label:"Purchases",   icon:"🛒"},
-  {file:"payments.html",  label:"Payments",    icon:"💳"},
-  {file:"cheques.html",   label:"Cheques",     icon:"📋"},
+const COMPANY="Vali East Northern Division MPCS Ltd";
+const ADDRESS="Point Pedro Road, Avarankal, Puttur, Atchuvely";
+const LOGO_URL="images (1).jfif";
+const PAGES=[
+  {file:"index.html",label:"Dashboard",icon:"⊞"},
+  {file:"suppliers.html",label:"Suppliers",icon:"👤"},
+  {file:"purchases.html",label:"Purchases",icon:"🛒"},
+  {file:"payments.html",label:"Payments",icon:"💳"},
+  {file:"cheques.html",label:"Cheques",icon:"📋"},
   {file:"outstanding.html",label:"Outstanding",icon:"📊"},
-  {file:"ledger.html",    label:"Ledger",      icon:"📒"},
-  {file:"summary.html",   label:"Summary",     icon:"📑"},
+  {file:"ledger.html",label:"Ledger",icon:"📒"},
+  {file:"summary.html",label:"Summary",icon:"📑"},
 ];
-
-/* ── Render Header ──────────────────────────────────────────── */
-function renderHeader(active){
-  const today = new Date().toLocaleDateString('en-LK',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
-  const logoHTML = LOGO_URL
-    ? `<img src="${LOGO_URL}" alt="Logo" class="logo-img">`
-    : `<div class="logo-img" style="display:flex;align-items:center;justify-content:center;font-weight:700;color:#0b2d75;font-size:14px;">VEM</div>`;
-  const nav = PAGES.map(p=>`<a href="${p.file}" class="nav-link${active===p.file?' active':''}"><span>${p.icon}</span>${p.label}</a>`).join('');
-  document.getElementById('app-header').innerHTML=`
-  <header>
-    <div class="header-inner">
-      ${logoHTML}
-      <div class="brand"><h1>${COMPANY}</h1><p>${ADDRESS}</p></div>
-      <div class="header-badge">
-        <span class="badge-label">Supplier Payables System</span>
-        <span class="badge-date">${today}</span>
-      </div>
-    </div>
-    <nav class="main-nav"><div class="nav-inner">${nav}</div></nav>
-  </header>`;
+function renderHeader(a){
+  const today=new Date().toLocaleDateString('en-LK',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  const logoHTML=LOGO_URL?`<img src="${LOGO_URL}" alt="Logo" style="height:52px;width:52px;object-fit:contain;border-radius:8px;background:#fff;padding:3px;">`:`<div class="logo-box">VEM</div>`;
+  const navLinks=PAGES.map(p=>`<a href="${p.file}" class="nav-link${a===p.file?' active':''}"><span>${p.icon}</span>${p.label}</a>`).join('');
+  document.getElementById('app-header').innerHTML=`<header><div class="header-inner">${logoHTML}<div class="brand-text"><h1>${COMPANY}</h1><p>${ADDRESS}</p></div><div class="header-right"><span class="system-label">Supplier Payables System</span><span class="today-date">${today}</span></div></div><nav class="main-nav"><div class="nav-inner">${navLinks}</div></nav></header>`;
 }
-
-/* ── Data Helpers ───────────────────────────────────────────── */
 function getData(k){try{return JSON.parse(localStorage.getItem('mpcs_'+k)||'[]');}catch(e){return[];}}
 function getSuppliers(){return getData('suppliers');}
 function getPurchases(){return getData('purchases');}
 function getPayments(){return getData('payments');}
 function fmt(n){return Number(n||0).toLocaleString('en-LK',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function todayStr(){return new Date().toISOString().split('T')[0];}
-function thisMonthStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');}
-function inMonth(d,m){if(!m)return true;return d&&d.startsWith(m);}
-
-/* ── Tab Switching ──────────────────────────────────────────── */
-let activeTab = 'detail';
-function switchTab(tab){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('tab-'+tab).classList.add('active');
-  const idx = ['detail','quick','register'].indexOf(tab);
-  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
-  activeTab = tab;
+function getSupplierBalance(sid){
+  const sup=getSuppliers().find(s=>s.id==sid);
+  if(!sup)return{opening:0,purchases:0,paid:0,outstanding:0};
+  const purchases=getPurchases().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
+  const paid=getPayments().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
+  return{opening:Number(sup.opening),purchases,paid,outstanding:Number(sup.opening)+purchases-paid};
+}
+function statusBadge(o){
+  if(o>0)return`<span class="badge badge-pending">Pending</span>`;
+  if(o===0)return`<span class="badge badge-settled">Settled</span>`;
+  return`<span class="badge badge-advance">Advance</span>`;
 }
 
-/* ── Amount class helper ────────────────────────────────────── */
-function balClass(v){
-  if(v>0) return 'amt amt-dr';
-  if(v<0) return 'amt amt-cr';
-  return 'amt amt-neutral';
-}
+renderHeader('outstanding.html');
 
-/* ── Render All ─────────────────────────────────────────────── */
-function renderAll(){
-  const month = document.getElementById('sel-month').value;
-  const nameFilter = (document.getElementById('f-name').value||'').toLowerCase();
-  const mLabel = month
-    ? new Date(month+'-01').toLocaleDateString('en-LK',{year:'numeric',month:'long'})
-    : 'All Periods';
-
-  document.getElementById('monthLabel1').textContent = mLabel;
-  document.getElementById('monthLabel2').textContent = mLabel;
-  document.getElementById('monthLabel3').textContent = mLabel;
-
-  const suppliers = getSuppliers().filter(s=>!nameFilter||s.name.toLowerCase().includes(nameFilter));
-  const allPurchases = getPurchases();
-  const allPayments  = getPayments();
-
-  /* ─ Build detail rows ─ */
-  let rows = [];
-  suppliers.forEach(s=>{
-    const sid = s.id;
-    const opening = Number(s.opening||0);
-    const mPurch  = allPurchases.filter(p=>p.supplierId==sid&&inMonth(p.date,month));
-    const mPay    = allPayments.filter(p=>p.supplierId==sid&&inMonth(p.date,month));
-
-    const purchaseAmt = mPurch.filter(p=>p.type==='Purchase').reduce((a,p)=>a+Number(p.amount),0);
-    const journalAmt  = mPurch.filter(p=>p.type==='Journal').reduce((a,p)=>a+Number(p.amount),0);
-    const chqPaid     = mPay.filter(p=>p.method==='Cheque').reduce((a,p)=>a+Number(p.amount),0);
-    const returnAmt   = mPurch.filter(p=>p.type==='Return Goods (F-19)').reduce((a,p)=>a+Number(p.amount),0);
-    const discAmt     = mPurch.filter(p=>p.type==='Discount Received').reduce((a,p)=>a+Number(p.amount),0);
-
-    // Closing Balance = Opening + Purchase + Journal − Cheque Paid − Returns (F-19) − Disc. Received
-    const closing = opening + purchaseAmt + journalAmt - chqPaid - returnAmt - discAmt;
-
-    rows.push({s,opening,purchaseAmt,journalAmt,chqPaid,returnAmt,discAmt,closing});
-  });
-
-  /* ─── TAB 1: Detailed Table ─── */
-  const dtBody = document.getElementById('detailTable');
-  document.getElementById('rowCount1').textContent = rows.length+' supplier'+(rows.length!==1?'s':'');
-  if(!rows.length){
-    dtBody.innerHTML='<tr class="empty-row"><td colspan="10">No suppliers found for this filter.</td></tr>';
-    document.getElementById('detailFoot').innerHTML='';
-  } else {
-    dtBody.innerHTML = rows.map((r,i)=>`
-    <tr>
-      <td style="color:var(--ink-4);font-size:11px;text-align:center;">${i+1}</td>
-      <td><div class="sup-name">${r.s.name}</div></td>
-      <td><span class="sup-ledger">${r.s.ledger||'—'}</span></td>
-      <td class="td-right"><span class="amt amt-blue">${fmt(r.opening)}</span></td>
-      <td class="td-right"><span class="amt amt-blue">${fmt(r.purchaseAmt)}</span></td>
-      <td class="td-right"><span class="amt amt-blue">${fmt(r.journalAmt)}</span></td>
-      <td class="td-right"><span class="amt amt-cr">${fmt(r.chqPaid)}</span></td>
-      <td class="td-right"><span class="amt amt-cr">${fmt(r.returnAmt)}</span></td>
-      <td class="td-right"><span class="amt amt-cr">${fmt(r.discAmt)}</span></td>
-      <td class="td-right" style="background:${r.closing>0?'#fff5f5':r.closing<0?'#f0faf5':'#f6f9fd'};">
-        <strong class="${balClass(r.closing)}">${fmt(r.closing)}</strong>
-      </td>
-    </tr>`).join('');
-
-    const totO  = rows.reduce((a,r)=>a+r.opening,0);
-    const totP  = rows.reduce((a,r)=>a+r.purchaseAmt,0);
-    const totJ  = rows.reduce((a,r)=>a+r.journalAmt,0);
-    const totC  = rows.reduce((a,r)=>a+r.chqPaid,0);
-    const totR  = rows.reduce((a,r)=>a+r.returnAmt,0);
-    const totD  = rows.reduce((a,r)=>a+r.discAmt,0);
-    const totCl = rows.reduce((a,r)=>a+r.closing,0);
-
-    document.getElementById('detailFoot').innerHTML=`<tr>
-      <td colspan="3" style="text-align:left;letter-spacing:.5px;">GRAND TOTAL — ${rows.length} Suppliers</td>
-      <td class="td-right">${fmt(totO)}</td>
-      <td class="td-right">${fmt(totP)}</td>
-      <td class="td-right">${fmt(totJ)}</td>
-      <td class="td-right">${fmt(totC)}</td>
-      <td class="td-right">${fmt(totR)}</td>
-      <td class="td-right">${fmt(totD)}</td>
-      <td class="td-right"><strong>${fmt(totCl)}</strong></td>
-    </tr>`;
-  }
-
-  /* ─── TAB 2: Quick Balance ─── */
-  document.getElementById('rowCount2').textContent = rows.length+' supplier'+(rows.length!==1?'s':'');
-
-  // Cards (screen)
-  const qbCards = document.getElementById('qbCards');
-  qbCards.innerHTML = rows.length
-    ? rows.map(r=>`
-      <div class="qb-card ${r.closing>0?'debit-bal':r.closing<0?'credit-bal':''}">
-        <div class="qb-sup">${r.s.name}</div>
-        <div class="qb-ledger">${r.s.ledger||'—'}</div>
-        <div class="qb-bal ${r.closing>0?'red':r.closing<0?'green':'zero'}">${fmt(r.closing)}</div>
-      </div>`).join('')
-    : '<p style="color:var(--ink-4);padding:20px;">No suppliers found.</p>';
-
-  // Table rows (print + screen duplicate)
-  const qbHtml = rows.length
-    ? rows.map((r,i)=>`<tr>
-        <td style="text-align:center;color:var(--ink-4);font-size:11px;">${i+1}</td>
-        <td><strong>${r.s.name}</strong></td>
-        <td><span class="sup-ledger">${r.s.ledger||'—'}</span></td>
-        <td class="td-right"><strong class="${balClass(r.closing)}">${fmt(r.closing)}</strong></td>
-      </tr>`).join('')
-    : '<tr class="empty-row"><td colspan="4">No suppliers found.</td></tr>';
-
-  const totCl2 = rows.reduce((a,r)=>a+r.closing,0);
-  const footHtml = rows.length ? `<tr>
-    <td colspan="3" style="text-align:left;">GRAND TOTAL — ${rows.length} Suppliers</td>
-    <td class="td-right"><strong>${fmt(totCl2)}</strong></td>
-  </tr>` : '';
-
-  document.getElementById('quickTable').innerHTML = qbHtml;
-  document.getElementById('quickFoot').innerHTML  = footHtml;
-  document.getElementById('quickTableScreen').innerHTML = qbHtml;
-  document.getElementById('quickFootScreen').innerHTML  = footHtml;
-
-  /* ─── TAB 3: Register ─── */
-  const supMap = Object.fromEntries(getSuppliers().map(s=>[s.id,s]));
-  let regRows = [];
-
-  allPurchases
-    .filter(p=>inMonth(p.date,month)&&(!nameFilter||(supMap[p.supplierId]?.name||'').toLowerCase().includes(nameFilter)))
-    .forEach(p=>{
-      const sup = supMap[p.supplierId];
-      regRows.push({date:p.date,supplier:p.supplier,ledger:sup?.ledger||'—',type:p.type,ref:p.invoice||'',desc:p.desc||'',debit:Number(p.amount),credit:0,order:p.date});
-    });
-
-  allPayments
-    .filter(p=>inMonth(p.date,month)&&(!nameFilter||(supMap[p.supplierId]?.name||'').toLowerCase().includes(nameFilter)))
-    .forEach(p=>{
-      const sup = supMap[p.supplierId];
-      regRows.push({date:p.date,supplier:p.supplier,ledger:sup?.ledger||'—',type:'Payment ('+p.method+')',ref:p.chqNo||p.ref||'',desc:p.bank||p.notes||'',debit:0,credit:Number(p.amount),order:p.date});
-    });
-
-  regRows.sort((a,b)=>a.order.localeCompare(b.order));
-  document.getElementById('rowCount3').textContent = regRows.length+' transaction'+(regRows.length!==1?'s':'');
-
-  const rBody = document.getElementById('regTable');
-  if(!regRows.length){
-    rBody.innerHTML='<tr class="empty-row"><td colspan="9">No transactions found for this filter.</td></tr>';
-    document.getElementById('regFoot').innerHTML='';
-  } else {
-    rBody.innerHTML = regRows.map((r,i)=>`<tr>
-      <td style="text-align:center;color:var(--ink-4);font-size:11px;">${i+1}</td>
-      <td style="white-space:nowrap;">${r.date}</td>
-      <td><strong>${r.supplier}</strong></td>
-      <td><span class="sup-ledger">${r.ledger}</span></td>
-      <td><span style="font-size:10px;font-weight:700;background:var(--accent-lt);color:var(--accent);padding:2px 7px;border-radius:3px;white-space:nowrap;">${r.type}</span></td>
-      <td style="font-family:var(--ff-mono);font-size:11px;">${r.ref||'—'}</td>
-      <td>${r.desc||'—'}</td>
-      <td class="td-right"><span class="amt amt-blue">${r.debit?fmt(r.debit):''}</span></td>
-      <td class="td-right"><span class="amt amt-cr">${r.credit?fmt(r.credit):''}</span></td>
-    </tr>`).join('');
-
-    document.getElementById('regFoot').innerHTML=`<tr>
-      <td colspan="7" style="text-align:left;">TOTAL — ${regRows.length} Transactions</td>
-      <td class="td-right">${fmt(regRows.reduce((a,r)=>a+r.debit,0))}</td>
-      <td class="td-right">${fmt(regRows.reduce((a,r)=>a+r.credit,0))}</td>
-    </tr>`;
-  }
-}
-
-/* ── Print Functions ──────────────────────────────────────────── */
-function setPrintMeta(title){
-  const month = document.getElementById('sel-month').value;
-  const mLabel = month
-    ? new Date(month+'-01').toLocaleDateString('en-LK',{year:'numeric',month:'long'})
-    : 'All Periods';
-  document.getElementById('phReport').textContent = title;
-  document.getElementById('phPeriod').textContent = '📅 ' + mLabel;
-  document.getElementById('phMeta').textContent = 'Printed: '+new Date().toLocaleString('en-LK')+' | System: MPCS Payables';
-}
-
-function printActive(){
-  setPrintMeta(
-    activeTab==='detail'   ? 'Detailed Supplier Account Summary'  :
-    activeTab==='quick'    ? 'Supplier Closing Balances'          :
-                             'Transaction Register'
-  );
-
-  // For Print Current View: show ONLY the active tab panel
-  // Hide all tab panels first, then reveal only the active one
-  const allPanels = document.querySelectorAll('.tab-panel');
-  allPanels.forEach(p => p.style.display = 'none');
-  const activePanel = document.getElementById('tab-' + activeTab);
-  if(activePanel) activePanel.style.display = 'block';
-
-  // Show qb print table only when quick tab is active
-  document.getElementById('qbTableWrap').style.display = activeTab === 'quick' ? 'block' : 'none';
-
-  // Show section title for the active tab only
-  const titleMap = {detail:'pst-detail', quick:'pst-quick', register:'pst-reg'};
-  ['pst-detail','pst-quick','pst-reg'].forEach(id => {
-    document.getElementById(id).style.display = 'none';
-  });
-  if(titleMap[activeTab]) document.getElementById(titleMap[activeTab]).style.display = 'block';
-
+function printReport(){
+  document.getElementById('printDate').textContent='Printed: '+new Date().toLocaleString('en-LK');
   window.print();
-
-  // Restore original tab-panel visibility (only active tab visible on screen)
-  allPanels.forEach(p => { p.style.display = ''; });
-  // Re-apply active class display
-  document.querySelectorAll('.tab-panel').forEach(p => {
-    p.style.display = p.classList.contains('active') ? '' : '';
-  });
-  document.getElementById('qbTableWrap').style.display = '';
-  ['pst-detail','pst-quick','pst-reg'].forEach(id => {
-    document.getElementById(id).style.display = 'none';
-  });
 }
 
-function printAll(){
-  setPrintMeta('Complete Supplier Summary Report');
+function renderOutTable(){
+  const fStatus=document.getElementById('f-status').value;
+  const fName=(document.getElementById('f-name').value||'').toLowerCase();
+  const suppliers=getSuppliers();
+  let all=suppliers.map(s=>({
+    ...s,
+    ...getSupplierBalance(s.id),
+    status:((b)=>b>0?'Pending':b===0?'Settled':'Advance')(getSupplierBalance(s.id).outstanding)
+  }));
 
-  // Show ALL tab panels for Print All
-  document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'block');
+  const totalPurch=all.reduce((a,s)=>a+s.purchases,0);
+  const totalPaid=all.reduce((a,s)=>a+s.paid,0);
+  const totalOut=all.reduce((a,s)=>a+s.outstanding,0);
+  const totalOpening=all.reduce((a,s)=>a+s.opening,0);
 
-  // Show qb print table
-  document.getElementById('qbTableWrap').style.display = 'block';
+  document.getElementById('statRow').innerHTML=`
+    <div class="stat-card blue"><p>Total Suppliers</p><h3>${suppliers.length}</h3></div>
+    <div class="stat-card gold"><p>Total Purchases</p><h3 class="gold">LKR ${fmt(totalPurch)}</h3></div>
+    <div class="stat-card green"><p>Total Paid</p><h3 class="green">LKR ${fmt(totalPaid)}</h3></div>
+    <div class="stat-card red"><p>Total Outstanding</p><h3 class="red">LKR ${fmt(totalOut)}</h3></div>
+    <div class="stat-card"><p>Pending / Settled</p><h3>${all.filter(s=>s.outstanding>0).length} / ${all.filter(s=>s.outstanding===0).length}</h3></div>`;
 
-  // Show all section titles
-  ['pst-detail','pst-quick','pst-reg'].forEach(id => {
-    document.getElementById(id).style.display = 'block';
-  });
+  if(fStatus) all=all.filter(r=>r.status===fStatus);
+  if(fName) all=all.filter(r=>r.name.toLowerCase().includes(fName));
 
-  window.print();
+  const tbody=document.getElementById('outTable');
+  const tfoot=document.getElementById('outFoot');
+  if(!all.length){tbody.innerHTML='<tr class="empty-row"><td colspan="8">No records found.</td></tr>';tfoot.innerHTML='';return;}
 
-  // Restore: only the active tab panel should be visible on screen
-  document.querySelectorAll('.tab-panel').forEach(p => {
-    p.style.display = p.classList.contains('active') ? '' : 'none';
-  });
-  // Reset none-active panels (CSS handles .tab-panel { display:none } for non-.active)
-  document.querySelectorAll('.tab-panel').forEach(p => { p.style.display = ''; });
+  tbody.innerHTML=all.map((s,i)=>`<tr>
+    <td>${i+1}</td>
+    <td><strong>${s.name}</strong></td>
+    <td>${s.ledger||'—'}</td>
+    <td class="amt-blue">${fmt(s.opening)}</td>
+    <td class="amt-blue">${fmt(s.purchases)}</td>
+    <td class="amt-green">${fmt(s.paid)}</td>
+    <td class="${s.outstanding>0?'amt-red':s.outstanding<0?'amt-blue':'amt-green'}"><strong>${fmt(s.outstanding)}</strong></td>
+    <td>${statusBadge(s.outstanding)}</td>
+  </tr>`).join('');
 
-  document.getElementById('qbTableWrap').style.display = '';
-  ['pst-detail','pst-quick','pst-reg'].forEach(id => {
-    document.getElementById(id).style.display = 'none';
-  });
+  const fTotal=all.reduce((a,s)=>a+s.outstanding,0);
+  tfoot.innerHTML=`<tr>
+    <td colspan="3">TOTAL</td>
+    <td>${fmt(all.reduce((a,s)=>a+s.opening,0))}</td>
+    <td>${fmt(all.reduce((a,s)=>a+s.purchases,0))}</td>
+    <td>${fmt(all.reduce((a,s)=>a+s.paid,0))}</td>
+    <td>${fmt(fTotal)}</td>
+    <td></td>
+  </tr>`;
 }
-
-/* ── Init ─────────────────────────────────────────────────────── */
-renderHeader('summary.html');
-document.getElementById('sel-month').value = thisMonthStr();
-renderAll();
+renderOutTable();
 </script>
 </body>
 </html>
-
