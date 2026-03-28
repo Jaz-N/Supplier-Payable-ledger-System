@@ -168,15 +168,15 @@ tfoot td:last-child{border-right:none;}
    PRINT STYLES
 ═══════════════════════════════════════════════════════════════ */
 @media print{
+  /* ── Page setup: A4 landscape ── */
+  @page{size:A4 landscape;margin:10mm;}
+
   /* Hide screen-only elements */
   #app-header,.no-print,.tab-bar,.controls-bar,.qb-grid{display:none!important;}
-  
-  /* Show all tab panels */
-  .tab-panel{display:block!important;}
-  
+
   /* Reset body */
   body{background:#fff;font-size:11pt;color:#000;}
-  .page-wrap{padding:0;max-width:100%;}
+  .page-wrap{padding:0;max-width:none;width:100%;}
 
   /* Print header shows */
   .print-header{
@@ -222,9 +222,30 @@ tfoot td:last-child{border-right:none;}
     letter-spacing:.5px;
   }
 
-  /* Table print */
-  .table-wrap{border:1pt solid #b0c4d8;border-radius:0;}
-  table{font-size:9pt;}
+  /* ── KEY FIX: Remove overflow clipping so full table width prints ── */
+  .table-wrap{
+    overflow:visible!important;
+    overflow-x:visible!important;
+    max-width:none!important;
+    width:100%!important;
+    border:1pt solid #b0c4d8;
+    border-radius:0;
+  }
+  /* Quick balance table also needs the fix */
+  .qb-table-wrap{
+    overflow:visible!important;
+    overflow-x:visible!important;
+    max-width:none!important;
+    width:100%!important;
+    display:block!important;
+  }
+
+  /* Tables: full width, cells wrap, no white-space clipping */
+  table{
+    font-size:9pt;
+    width:100%!important;
+    table-layout:auto;
+  }
   thead th{
     background:#0b2d75!important;
     color:#fff!important;
@@ -232,10 +253,22 @@ tfoot td:last-child{border-right:none;}
     print-color-adjust:exact;
     padding:6pt 8pt;
     font-size:8pt;
+    white-space:normal;        /* allow wrapping in print */
   }
-  tbody td{padding:5pt 8pt;border-right:0.5pt solid #d0dce8;}
+  /* Repeat header on every printed page */
+  thead{display:table-header-group;}
+
+  tbody td{
+    padding:5pt 8pt;
+    border-right:0.5pt solid #d0dce8;
+    word-break:break-word;     /* wrap long content */
+    white-space:normal;
+  }
+  /* Prevent rows from splitting across pages */
+  tbody tr{page-break-inside:avoid;}
   tbody tr:nth-child(even){background:#f0f5fb!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   tbody tr:hover{background:inherit!important;}
+
   tfoot td{
     background:#0b2d75!important;
     color:#fff!important;
@@ -244,10 +277,9 @@ tfoot td:last-child{border-right:none;}
     padding:6pt 8pt;
     font-size:9.5pt;
   }
-  .amt{font-size:9pt;}
+  tfoot tr{page-break-inside:avoid;}
 
-  /* Quick Balance print — table only, no cards */
-  .qb-table-wrap{display:block!important;}
+  .amt{font-size:9pt;}
 
   /* Signature */
   .signature-row{margin-top:24pt;padding-top:16pt;page-break-inside:avoid;}
@@ -313,15 +345,7 @@ tfoot td:last-child{border-right:none;}
 
     <div class="print-section-title" style="display:none;" id="pst-detail">Detailed Supplier Account Summary</div>
 
-    <div class="formula-bar no-print">
-      <strong>Closing Balance</strong> <span>=</span>
-      Opening Balance
-      <span>+</span> Purchase
-      <span>+</span> Journal 
-      <span>−</span> F-08(Cheque Paid)
-      <span>−</span> Return Goods (F-19)
-      <span>−</span> Discount Received
-    </div>
+   
 
     <div class="card">
       <div class="card-head">
@@ -707,23 +731,64 @@ function printActive(){
     activeTab==='quick'    ? 'Supplier Closing Balances'          :
                              'Transaction Register'
   );
-  // Show qb table for print
-  document.getElementById('qbTableWrap').style.display = activeTab==='quick' ? 'block' : '';
+
+  // For Print Current View: show ONLY the active tab panel
+  // Hide all tab panels first, then reveal only the active one
+  const allPanels = document.querySelectorAll('.tab-panel');
+  allPanels.forEach(p => p.style.display = 'none');
+  const activePanel = document.getElementById('tab-' + activeTab);
+  if(activePanel) activePanel.style.display = 'block';
+
+  // Show qb print table only when quick tab is active
+  document.getElementById('qbTableWrap').style.display = activeTab === 'quick' ? 'block' : 'none';
+
+  // Show section title for the active tab only
+  const titleMap = {detail:'pst-detail', quick:'pst-quick', register:'pst-reg'};
+  ['pst-detail','pst-quick','pst-reg'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  if(titleMap[activeTab]) document.getElementById(titleMap[activeTab]).style.display = 'block';
+
   window.print();
+
+  // Restore original tab-panel visibility (only active tab visible on screen)
+  allPanels.forEach(p => { p.style.display = ''; });
+  // Re-apply active class display
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.style.display = p.classList.contains('active') ? '' : '';
+  });
   document.getElementById('qbTableWrap').style.display = '';
+  ['pst-detail','pst-quick','pst-reg'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
 }
 
 function printAll(){
   setPrintMeta('Complete Supplier Summary Report');
+
+  // Show ALL tab panels for Print All
+  document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'block');
+
+  // Show qb print table
   document.getElementById('qbTableWrap').style.display = 'block';
+
   // Show all section titles
-  ['pst-detail','pst-quick','pst-reg'].forEach(id=>{
-    document.getElementById(id).style.display='block';
+  ['pst-detail','pst-quick','pst-reg'].forEach(id => {
+    document.getElementById(id).style.display = 'block';
   });
+
   window.print();
+
+  // Restore: only the active tab panel should be visible on screen
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.style.display = p.classList.contains('active') ? '' : 'none';
+  });
+  // Reset none-active panels (CSS handles .tab-panel { display:none } for non-.active)
+  document.querySelectorAll('.tab-panel').forEach(p => { p.style.display = ''; });
+
   document.getElementById('qbTableWrap').style.display = '';
-  ['pst-detail','pst-quick','pst-reg'].forEach(id=>{
-    document.getElementById(id).style.display='none';
+  ['pst-detail','pst-quick','pst-reg'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
   });
 }
 
@@ -734,3 +799,4 @@ renderAll();
 </script>
 </body>
 </html>
+
