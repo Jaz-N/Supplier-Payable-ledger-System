@@ -44,6 +44,7 @@ header{background:linear-gradient(135deg,var(--blue-900) 0%,var(--blue-800) 60%,
 .btn-sm{padding:5px 12px;font-size:12px;}
 .btn-outline{background:transparent;border:1px solid var(--blue-400);color:var(--blue-500);}
 .btn-outline:hover{background:var(--blue-50);}
+.btn-green{background:linear-gradient(135deg,#1a6b3c,#145c32);color:#fff;}
 .form-actions{margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
 .table-wrap{overflow-x:auto;border-radius:var(--radius);box-shadow:var(--shadow-sm);}
 table{width:100%;border-collapse:collapse;font-size:13px;}
@@ -61,15 +62,22 @@ tbody tr:hover{background:#deeaf8;}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--blue-700);color:#fff;padding:11px 22px;border-radius:var(--radius);font-size:13px;font-weight:700;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:opacity 0.3s,transform 0.3s;transform:translateY(10px);z-index:9999;}
 .toast.show{opacity:1;transform:translateY(0);}
 .toast.toast-err{background:var(--red);}
+.toast.toast-ok{background:var(--green);}
 .amt-red{color:var(--red);font-weight:700;}
 .amt-blue{color:var(--blue-600);font-weight:700;}
 .amt-green{color:var(--green);font-weight:700;}
-/* Edit modal */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;align-items:center;justify-content:center;}
 .modal-overlay.show{display:flex;}
 .modal-box{background:#fff;border-radius:var(--radius);padding:28px;width:90%;max-width:700px;box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto;}
 .modal-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--blue-700);margin-bottom:18px;padding-bottom:10px;border-bottom:2px solid var(--blue-50);}
 select.inline-sel{border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-family:'Lato',sans-serif;font-size:12px;background:var(--blue-50);}
+/* Sync status bar */
+.sync-bar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--blue-50);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;color:var(--muted);margin-bottom:16px;}
+.sync-dot{width:9px;height:9px;border-radius:50%;background:#ccc;flex-shrink:0;}
+.sync-dot.syncing{background:var(--amber);animation:pulse 1s infinite;}
+.sync-dot.synced{background:var(--green);}
+.sync-dot.error{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 </style>
 </head>
 <body>
@@ -77,6 +85,14 @@ select.inline-sel{border:1px solid var(--border);border-radius:4px;padding:4px 8
 
 <div class="page-wrap">
   <div class="page-title"><h2>👤 Supplier Master</h2><div class="title-line"></div></div>
+
+  <!-- Sync Status Bar -->
+  <div class="sync-bar">
+    <div class="sync-dot" id="syncDot"></div>
+    <span id="syncStatus">Not synced yet</span>
+    <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="syncToSheets()">🔄 Sync Data</button>
+  </div>
+
   <div class="card">
     <div class="card-title" id="formTitle">Add New Supplier</div>
     <div class="form-grid">
@@ -96,6 +112,7 @@ select.inline-sel{border:1px solid var(--border);border-radius:4px;padding:4px 8
       <span id="editHint" style="font-size:12px;color:var(--muted);display:none;">✏️ Editing mode — make changes then click Update</span>
     </div>
   </div>
+
   <div class="card">
     <div class="card-title">Supplier List</div>
     <div class="table-wrap"><table>
@@ -107,127 +124,210 @@ select.inline-sel{border:1px solid var(--border);border-radius:4px;padding:4px 8
 <div id="toast" class="toast"></div>
 
 <script>
-const COMPANY="Vali East Northern Division MPCS Ltd";
-const ADDRESS="Point Pedro Road, Avarankal, Puttur, Atchuvely";
-const LOGO_URL="images (1).jfif";
-const PAGES=[
-  {file:"index.html",label:"Dashboard",icon:"⊞"},
-  {file:"suppliers.html",label:"Suppliers",icon:"👤"},
-  {file:"purchases.html",label:"Purchases",icon:"🛒"},
-  {file:"payments.html",label:"Payments",icon:"💳"},
-  {file:"cheques.html",label:"Cheques",icon:"📋"},
-  {file:"outstanding.html",label:"Outstanding",icon:"📊"},
-  {file:"ledger.html",label:"Ledger",icon:"📒"},
-  {file:"summary.html",label:"Summary",icon:"📑"},
+// ── Google Apps Script Web App URL ───────────────────────────
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRrrVBzJUR1_56Lof3YKUhMTSAVQhfMteTRUtiDvhgeI-wOZVvOiEkJ2bI62MwqV-p/exec";
+
+// ── App config ───────────────────────────────────────────────
+const COMPANY  = "Vali East Northern Division MPCS Ltd";
+const ADDRESS  = "Point Pedro Road, Avarankal, Puttur, Atchuvely";
+const LOGO_URL = "images (1).jfif";
+const PAGES    = [
+  {file:"index.html",      label:"Dashboard",   icon:"⊞"},
+  {file:"suppliers.html",  label:"Suppliers",   icon:"👤"},
+  {file:"purchases.html",  label:"Purchases",   icon:"🛒"},
+  {file:"payments.html",   label:"Payments",    icon:"💳"},
+  {file:"cheques.html",    label:"Cheques",     icon:"📋"},
+  {file:"outstanding.html",label:"Outstanding", icon:"📊"},
+  {file:"ledger.html",     label:"Ledger",      icon:"📒"},
+  {file:"summary.html",    label:"Summary",     icon:"📑"},
 ];
+
+// ── Header ───────────────────────────────────────────────────
 function renderHeader(a){
-  const today=new Date().toLocaleDateString('en-LK',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
-  const logoHTML=LOGO_URL?`<img src="${LOGO_URL}" alt="Logo" style="height:52px;width:52px;object-fit:contain;border-radius:8px;background:#fff;padding:3px;">`:`<div class="logo-box">VEM</div>`;
-  const navLinks=PAGES.map(p=>`<a href="${p.file}" class="nav-link${a===p.file?' active':''}"><span>${p.icon}</span>${p.label}</a>`).join('');
-  document.getElementById('app-header').innerHTML=`<header><div class="header-inner">${logoHTML}<div class="brand-text"><h1>${COMPANY}</h1><p>${ADDRESS}</p></div><div class="header-right"><span class="system-label">Supplier Payables System</span><span class="today-date">${today}</span></div></div><nav class="main-nav"><div class="nav-inner">${navLinks}</div></nav></header>`;
+  const today    = new Date().toLocaleDateString('en-LK',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  const logoHTML = LOGO_URL
+    ? `<img src="${LOGO_URL}" alt="Logo" style="height:52px;width:52px;object-fit:contain;border-radius:8px;background:#fff;padding:3px;">`
+    : `<div class="logo-box">VEM</div>`;
+  const navLinks = PAGES.map(p=>`<a href="${p.file}" class="nav-link${a===p.file?' active':''}"><span>${p.icon}</span>${p.label}</a>`).join('');
+  document.getElementById('app-header').innerHTML =
+    `<header><div class="header-inner">${logoHTML}<div class="brand-text"><h1>${COMPANY}</h1><p>${ADDRESS}</p></div><div class="header-right"><span class="system-label">Supplier Payables System</span><span class="today-date">${today}</span></div></div><nav class="main-nav"><div class="nav-inner">${navLinks}</div></nav></header>`;
 }
+
+// ── Local storage helpers ────────────────────────────────────
 function getData(k){try{return JSON.parse(localStorage.getItem('mpcs_'+k)||'[]');}catch(e){return[];}}
 function setData(k,v){localStorage.setItem('mpcs_'+k,JSON.stringify(v));}
 function getSuppliers(){return getData('suppliers');}
 function getPurchases(){return getData('purchases');}
-function getPayments(){return getData('payments');}
+function getPayments() {return getData('payments');}
 function saveSuppliers(d){setData('suppliers',d);}
+
+// ── Formatting helpers ───────────────────────────────────────
 function fmt(n){return Number(n||0).toLocaleString('en-LK',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function todayStr(){return new Date().toISOString().split('T')[0];}
+
+// ── Balance calculator ───────────────────────────────────────
 function getSupplierBalance(sid){
-  const sup=getSuppliers().find(s=>s.id==sid);
-  if(!sup)return{opening:0,purchases:0,paid:0,outstanding:0};
-  const purchases=getPurchases().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
-  const paid=getPayments().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
-  return{opening:Number(sup.opening),purchases,paid,outstanding:Number(sup.opening)+purchases-paid};
+  const sup = getSuppliers().find(s=>s.id==sid);
+  if(!sup) return {opening:0,purchases:0,paid:0,outstanding:0};
+  const purchases = getPurchases().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
+  const paid      = getPayments().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
+  return {opening:Number(sup.opening),purchases,paid,outstanding:Number(sup.opening)+purchases-paid};
 }
+
 function statusBadge(o){
-  if(o>0)return`<span class="badge badge-pending">Pending</span>`;
-  if(o===0)return`<span class="badge badge-settled">Settled</span>`;
-  return`<span class="badge badge-advance">Advance</span>`;
-}
-function toast(msg,isErr=false){
-  let t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast show'+(isErr?' toast-err':'');
-  clearTimeout(t._tid);t._tid=setTimeout(()=>t.classList.remove('show'),2800);
+  if(o>0)  return `<span class="badge badge-pending">Pending</span>`;
+  if(o===0) return `<span class="badge badge-settled">Settled</span>`;
+  return `<span class="badge badge-advance">Advance</span>`;
 }
 
+// ── Toast ────────────────────────────────────────────────────
+function toast(msg, type=''){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = 'toast show' + (type ? ' toast-'+type : '');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ── Sync status UI ───────────────────────────────────────────
+function setSyncStatus(state, msg){
+  const dot    = document.getElementById('syncDot');
+  const status = document.getElementById('syncStatus');
+  dot.className = 'sync-dot ' + state;
+  status.textContent = msg;
+}
+
+// ── Google Sheets sync ───────────────────────────────────────
+async function syncToSheets(){
+  setSyncStatus('syncing', 'Syncing to Google Sheets…');
+  try {
+    const payload = {
+      action    : 'sync',
+      suppliers : getSuppliers(),
+      purchases : getPurchases(),
+      payments  : getPayments(),
+    };
+
+    const res  = await fetch(APPS_SCRIPT_URL, {
+      method : 'POST',
+      body   : JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if(data.ok){
+      const now = new Date().toLocaleTimeString('en-LK');
+      setSyncStatus('synced', `Last synced: ${now} — ${data.suppliers} suppliers, ${data.purchases} purchases, ${data.payments} payments`);
+      toast('✅ Google Sheets updated successfully!', 'ok');
+    } else {
+      throw new Error(data.error || 'Unknown error');
+    }
+
+  } catch(err) {
+    setSyncStatus('error', 'Sync failed: ' + err.message);
+    toast('❌ Sync failed: ' + err.message, 'err');
+  }
+}
+
+// ── Auto-sync after every save ────────────────────────────────
+function autoSync(){
+  setSyncStatus('syncing','Auto-syncing…');
+  syncToSheets();
+}
+
+// ── Init ─────────────────────────────────────────────────────
 renderHeader('suppliers.html');
-document.getElementById('s-opdate').value=todayStr();
+document.getElementById('s-opdate').value = todayStr();
 
-let editId=null;
+let editId = null;
 
+// ── Save / Update supplier ───────────────────────────────────
 function saveSupplierForm(){
-  const name=document.getElementById('s-name').value.trim();
-  if(!name){toast('Supplier name is required.',true);return;}
-  const obj={
-    id:editId||Date.now(),
+  const name = document.getElementById('s-name').value.trim();
+  if(!name){ toast('Supplier name is required.','err'); return; }
+
+  const obj = {
+    id      : editId || Date.now(),
     name,
-    ledger:document.getElementById('s-ledger').value.trim(),
-    contact:document.getElementById('s-contact').value.trim(),
-    mobile:document.getElementById('s-mobile').value.trim(),
-    landline:document.getElementById('s-landline').value.trim(),
-    email:document.getElementById('s-email').value.trim(),
-    opening:parseFloat(document.getElementById('s-opening').value)||0,
-    opDate:document.getElementById('s-opdate').value,
-    address:document.getElementById('s-address').value.trim()
+    ledger  : document.getElementById('s-ledger').value.trim(),
+    contact : document.getElementById('s-contact').value.trim(),
+    mobile  : document.getElementById('s-mobile').value.trim(),
+    landline: document.getElementById('s-landline').value.trim(),
+    email   : document.getElementById('s-email').value.trim(),
+    opening : parseFloat(document.getElementById('s-opening').value)||0,
+    opDate  : document.getElementById('s-opdate').value,
+    address : document.getElementById('s-address').value.trim(),
   };
-  let s=getSuppliers();
+
+  let s = getSuppliers();
   if(editId){
-    const idx=s.findIndex(x=>x.id===editId);
-    if(idx>-1)s[idx]=obj;
-    toast('Supplier updated successfully.');
+    const idx = s.findIndex(x=>x.id===editId);
+    if(idx>-1) s[idx] = obj;
+    toast('Supplier updated.');
   } else {
     s.push(obj);
-    toast('Supplier added successfully.');
+    toast('Supplier added.');
   }
-  saveSuppliers(s);renderSTable();cancelEdit();
+
+  saveSuppliers(s);
+  renderSTable();
+  cancelEdit();
+  autoSync();   // ← sends to Google Sheets automatically
 }
 
+// ── Edit supplier ────────────────────────────────────────────
 function editSup(id){
-  const s=getSuppliers().find(x=>x.id===id);
-  if(!s)return;
-  editId=id;
-  document.getElementById('s-name').value=s.name||'';
-  document.getElementById('s-ledger').value=s.ledger||'';
-  document.getElementById('s-contact').value=s.contact||'';
-  document.getElementById('s-mobile').value=s.mobile||'';
-  document.getElementById('s-landline').value=s.landline||'';
-  document.getElementById('s-email').value=s.email||'';
-  document.getElementById('s-opening').value=s.opening||0;
-  document.getElementById('s-opdate').value=s.opDate||todayStr();
-  document.getElementById('s-address').value=s.address||'';
-  document.getElementById('formTitle').textContent='✏️ Edit Supplier';
-  document.getElementById('saveBtn').textContent='✔ Update Supplier';
-  document.getElementById('saveBtn').className='btn btn-gold';
-  document.getElementById('editHint').style.display='inline';
+  const s = getSuppliers().find(x=>x.id===id);
+  if(!s) return;
+  editId = id;
+  document.getElementById('s-name').value    = s.name    || '';
+  document.getElementById('s-ledger').value  = s.ledger  || '';
+  document.getElementById('s-contact').value = s.contact || '';
+  document.getElementById('s-mobile').value  = s.mobile  || '';
+  document.getElementById('s-landline').value= s.landline|| '';
+  document.getElementById('s-email').value   = s.email   || '';
+  document.getElementById('s-opening').value = s.opening || 0;
+  document.getElementById('s-opdate').value  = s.opDate  || todayStr();
+  document.getElementById('s-address').value = s.address || '';
+  document.getElementById('formTitle').textContent      = '✏️ Edit Supplier';
+  document.getElementById('saveBtn').textContent        = '✔ Update Supplier';
+  document.getElementById('saveBtn').className          = 'btn btn-gold';
+  document.getElementById('editHint').style.display     = 'inline';
   document.getElementById('s-name').focus();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+// ── Cancel edit ──────────────────────────────────────────────
 function cancelEdit(){
-  editId=null;
+  editId = null;
   ['s-name','s-ledger','s-contact','s-mobile','s-landline','s-email','s-address'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('s-opening').value=0;
-  document.getElementById('s-opdate').value=todayStr();
-  document.getElementById('formTitle').textContent='Add New Supplier';
-  document.getElementById('saveBtn').textContent='+ Add Supplier';
-  document.getElementById('saveBtn').className='btn btn-primary';
-  document.getElementById('editHint').style.display='none';
+  document.getElementById('s-opening').value           = 0;
+  document.getElementById('s-opdate').value            = todayStr();
+  document.getElementById('formTitle').textContent     = 'Add New Supplier';
+  document.getElementById('saveBtn').textContent       = '+ Add Supplier';
+  document.getElementById('saveBtn').className         = 'btn btn-primary';
+  document.getElementById('editHint').style.display    = 'none';
 }
 
+// ── Delete supplier ──────────────────────────────────────────
 function deleteSup(id){
-  if(!confirm('Delete this supplier? This cannot be undone.'))return;
+  if(!confirm('Delete this supplier? This cannot be undone.')) return;
   saveSuppliers(getSuppliers().filter(s=>s.id!==id));
-  renderSTable();toast('Supplier deleted.');
+  renderSTable();
+  toast('Supplier deleted.');
+  autoSync();   // ← sync deletion to Google Sheets
 }
 
+// ── Render table ─────────────────────────────────────────────
 function renderSTable(){
-  const s=getSuppliers(),tbody=document.getElementById('suppliersTable');
-  if(!s.length){tbody.innerHTML='<tr class="empty-row"><td colspan="10">No suppliers added yet.</td></tr>';return;}
-  tbody.innerHTML=s.map((s,i)=>{
-    const b=getSupplierBalance(s.id);
-    const cls=b.outstanding>0?'amt-red':b.outstanding<0?'amt-blue':'amt-green';
+  const s = getSuppliers(), tbody = document.getElementById('suppliersTable');
+  if(!s.length){
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">No suppliers added yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = s.map((s,i)=>{
+    const b   = getSupplierBalance(s.id);
+    const cls = b.outstanding>0?'amt-red':b.outstanding<0?'amt-blue':'amt-green';
     return `<tr>
       <td>${i+1}</td>
       <td><strong>${s.name}</strong><br><small style="color:var(--muted)">${s.ledger||''}</small></td>
@@ -245,6 +345,7 @@ function renderSTable(){
     </tr>`;
   }).join('');
 }
+
 renderSTable();
 </script>
 </body>
