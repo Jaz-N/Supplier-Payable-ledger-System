@@ -52,6 +52,22 @@ tfoot td{background:#f7f9fc;font-weight:900;padding:10px 12px;border-top:2px sol
 .amt-red{color:var(--red);font-weight:700;}
 .amt-blue{color:var(--blue-600);font-weight:700;}
 .amt-green{color:var(--green);font-weight:700;}
+
+/* Sync bar */
+.sync-bar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--blue-50);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;color:var(--muted);margin-bottom:16px;}
+.sync-dot{width:9px;height:9px;border-radius:50%;background:#ccc;flex-shrink:0;}
+.sync-dot.syncing{background:var(--amber);animation:pulse 1s infinite;}
+.sync-dot.synced{background:var(--green);}
+.sync-dot.error{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+/* Loading overlay */
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(10,22,40,0.45);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.loading-overlay.show{display:flex;}
+.loading-spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;}
+.loading-text{color:#fff;font-size:14px;font-weight:700;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
 @media print{
   #app-header,.no-print{display:none!important;}
   .info-box{display:flex!important;}
@@ -63,6 +79,13 @@ tfoot td{background:#f7f9fc;font-weight:900;padding:10px 12px;border-top:2px sol
 </style>
 </head>
 <body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">Loading data from Google Sheets…</div>
+</div>
+
 <div id="app-header"></div>
 
 <div class="page-wrap">
@@ -73,12 +96,26 @@ tfoot td{background:#f7f9fc;font-weight:900;padding:10px 12px;border-top:2px sol
   </div>
 
   <div class="page-title"><h2>📒 Supplier Ledger</h2><div class="title-line"></div></div>
+
+  <!-- Sync status bar -->
+  <div class="sync-bar no-print">
+    <div class="sync-dot syncing" id="syncDot"></div>
+    <span id="syncStatus">Connecting to Google Sheets…</span>
+    <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="loadFromSheets()">🔄 Refresh Data</button>
+  </div>
+
   <div class="card no-print" style="padding:16px 20px;">
     <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-      <div class="form-group" style="min-width:220px;"><label>Select Supplier</label><select id="ledger-supplier" onchange="renderLedgerView()"><option value="">-- Select Supplier --</option></select></div>
+      <div class="form-group" style="min-width:220px;">
+        <label>Select Supplier</label>
+        <select id="ledger-supplier" onchange="renderLedgerView()">
+          <option value="">-- Select Supplier --</option>
+        </select>
+      </div>
       <button class="btn btn-outline btn-sm" style="margin-top:18px;" onclick="window.print()">🖨 Print</button>
     </div>
   </div>
+
   <div class="info-box" id="lbalBox">
     <div class="info-item"><div class="lbl">Ledger No</div><div class="val" id="lb-ledger">—</div></div>
     <div class="info-item"><div class="lbl">Opening Bal.</div><div class="val" id="lb-open">0</div></div>
@@ -86,88 +123,223 @@ tfoot td{background:#f7f9fc;font-weight:900;padding:10px 12px;border-top:2px sol
     <div class="info-item"><div class="lbl">Total Paid</div><div class="val" id="lb-paid">0</div></div>
     <div class="info-item danger"><div class="lbl">Outstanding</div><div class="val" id="lb-out">0</div></div>
   </div>
+
   <div class="card">
     <div class="card-title" id="ledgerTitle">Ledger Transactions</div>
     <div class="table-wrap"><table>
       <thead><tr><th>#</th><th>Date</th><th>Transaction Type</th><th>Details</th><th>Debit (LKR)</th><th>Credit (LKR)</th><th>Balance (LKR)</th></tr></thead>
-      <tbody id="ledgerTable"><tr class="empty-row"><td colspan="7">Select a supplier to view ledger.</td></tr></tbody>
+      <tbody id="ledgerTable"><tr class="empty-row"><td colspan="7">Loading data…</td></tr></tbody>
       <tfoot id="ledgerFoot"></tfoot>
     </table></div>
   </div>
 </div>
-<div id="toast" class="toast" style="position:fixed;bottom:24px;right:24px;background:var(--blue-700);color:#fff;padding:11px 22px;border-radius:8px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:opacity 0.3s,transform 0.3s;transform:translateY(10px);z-index:9999;"></div>
+
+<div id="toast" style="position:fixed;bottom:24px;right:24px;background:var(--blue-700);color:#fff;padding:11px 22px;border-radius:8px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:opacity 0.3s,transform 0.3s;transform:translateY(10px);z-index:9999;"></div>
 
 <script>
-const COMPANY="Vali East Northern Division MPCS Ltd";
-const ADDRESS="Point Pedro Road, Avarankal, Puttur, Atchuvely";
-const LOGO_URL="images (1).jfif";
-const PAGES=[
-  {file:"index.html",label:"Dashboard",icon:"⊞"},
-  {file:"suppliers.html",label:"Suppliers",icon:"👤"},
-  {file:"purchases.html",label:"Purchases",icon:"🛒"},
-  {file:"payments.html",label:"Payments",icon:"💳"},
-  {file:"cheques.html",label:"Cheques",icon:"📋"},
-  {file:"outstanding.html",label:"Outstanding",icon:"📊"},
-  {file:"ledger.html",label:"Ledger",icon:"📒"},
-  {file:"summary.html",label:"Summary",icon:"📑"},
+// ── Config ───────────────────────────────────────────────────
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRrrVBzJUR1_56Lof3YKUhMTSAVQhfMteTRUtiDvhgeI-wOZVvOiEkJ2bI62MwqV-p/exec";
+const COMPANY  = "Vali East Northern Division MPCS Ltd";
+const ADDRESS  = "Point Pedro Road, Avarankal, Puttur, Atchuvely";
+const LOGO_URL = "images (1).jfif";
+const PAGES    = [
+  {file:"index.html",      label:"Dashboard",   icon:"⊞"},
+  {file:"suppliers.html",  label:"Suppliers",   icon:"👤"},
+  {file:"purchases.html",  label:"Purchases",   icon:"🛒"},
+  {file:"payments.html",   label:"Payments",    icon:"💳"},
+  {file:"cheques.html",    label:"Cheques",     icon:"📋"},
+  {file:"outstanding.html",label:"Outstanding", icon:"📊"},
+  {file:"ledger.html",     label:"Ledger",      icon:"📒"},
+  {file:"summary.html",    label:"Summary",     icon:"📑"},
 ];
+
+// ── Header ───────────────────────────────────────────────────
 function renderHeader(a){
-  const today=new Date().toLocaleDateString('en-LK',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
-  const logoHTML=LOGO_URL?`<img src="${LOGO_URL}" alt="Logo" style="height:52px;width:52px;object-fit:contain;border-radius:8px;background:#fff;padding:3px;">`:`<div class="logo-box">VEM</div>`;
-  const navLinks=PAGES.map(p=>`<a href="${p.file}" class="nav-link${a===p.file?' active':''}"><span>${p.icon}</span>${p.label}</a>`).join('');
-  document.getElementById('app-header').innerHTML=`<header><div class="header-inner">${logoHTML}<div class="brand-text"><h1>${COMPANY}</h1><p>${ADDRESS}</p></div><div class="header-right"><span class="system-label">Supplier Payables System</span><span class="today-date">${today}</span></div></div><nav class="main-nav"><div class="nav-inner">${navLinks}</div></nav></header>`;
+  const today    = new Date().toLocaleDateString('en-LK',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  const logoHTML = LOGO_URL
+    ? `<img src="${LOGO_URL}" alt="Logo" style="height:52px;width:52px;object-fit:contain;border-radius:8px;background:#fff;padding:3px;">`
+    : `<div class="logo-box">VEM</div>`;
+  const navLinks = PAGES.map(p=>`<a href="${p.file}" class="nav-link${a===p.file?' active':''}"><span>${p.icon}</span>${p.label}</a>`).join('');
+  document.getElementById('app-header').innerHTML =
+    `<header><div class="header-inner">${logoHTML}<div class="brand-text"><h1>${COMPANY}</h1><p>${ADDRESS}</p></div><div class="header-right"><span class="system-label">Supplier Payables System</span><span class="today-date">${today}</span></div></div><nav class="main-nav"><div class="nav-inner">${navLinks}</div></nav></header>`;
 }
+
+// ── Local storage helpers ────────────────────────────────────
 function getData(k){try{return JSON.parse(localStorage.getItem('mpcs_'+k)||'[]');}catch(e){return[];}}
+function setData(k,v){localStorage.setItem('mpcs_'+k,JSON.stringify(v));}
 function getSuppliers(){return getData('suppliers');}
 function getPurchases(){return getData('purchases');}
-function getPayments(){return getData('payments');}
+function getPayments() {return getData('payments');}
+
+// ── Format ───────────────────────────────────────────────────
 function fmt(n){return Number(n||0).toLocaleString('en-LK',{minimumFractionDigits:2,maximumFractionDigits:2});}
 
-renderHeader('ledger.html');
-
-function populateLedgerSel(){
-  const sel=document.getElementById('ledger-supplier');
-  getSuppliers().forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name+(s.ledger?' ('+s.ledger+')':'');sel.appendChild(o);});
+// ── Sync status UI ───────────────────────────────────────────
+function setSyncStatus(state, msg){
+  document.getElementById('syncDot').className = 'sync-dot ' + state;
+  document.getElementById('syncStatus').textContent = msg;
 }
 
+// ── Toast ────────────────────────────────────────────────────
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.opacity = 1; t.style.transform = 'translateY(0)';
+  clearTimeout(t._tid);
+  t._tid = setTimeout(()=>{t.style.opacity=0;t.style.transform='translateY(10px)';}, 3000);
+}
+
+// ── Load data FROM Google Sheets → parse sheet rows → localStorage ──
+async function loadFromSheets(){
+  setSyncStatus('syncing', 'Loading data from Google Sheets…');
+  document.getElementById('loadingOverlay').classList.add('show');
+  document.getElementById('loadingText').textContent = 'Loading data from Google Sheets…';
+
+  try {
+    // GET request reads the spreadsheet summary — but we need the actual rows.
+    // We pass action=read so Apps Script returns all data.
+    const url = APPS_SCRIPT_URL + '?action=read';
+    const res  = await fetch(url);
+    const data = await res.json();
+
+    if(data.ok && data.suppliers){
+      // Save all data into localStorage so ledger renders from it
+      setData('suppliers', data.suppliers);
+      setData('purchases', data.purchases || []);
+      setData('payments',  data.payments  || []);
+
+      const now = new Date().toLocaleTimeString('en-LK');
+      setSyncStatus('synced', `Data loaded: ${data.suppliers.length} suppliers — ${now}`);
+      toast('✅ Data loaded from Google Sheets');
+
+      // Refresh supplier dropdown
+      populateLedgerSel();
+    } else {
+      // If Apps Script doesn't support read yet, fall back to localStorage
+      setSyncStatus('synced', 'Using locally cached data');
+      toast('ℹ️ Using cached local data');
+      populateLedgerSel();
+    }
+
+  } catch(err){
+    // Network error or Apps Script not updated yet — use localStorage
+    setSyncStatus('error', 'Could not reach Google Sheets — using local data');
+    toast('⚠️ Using cached local data');
+    populateLedgerSel();
+  } finally {
+    document.getElementById('loadingOverlay').classList.remove('show');
+  }
+}
+
+// ── Populate supplier dropdown ────────────────────────────────
+function populateLedgerSel(){
+  const sel = document.getElementById('ledger-supplier');
+  // Keep first placeholder option only
+  sel.innerHTML = '<option value="">-- Select Supplier --</option>';
+  getSuppliers().forEach(s=>{
+    const o = document.createElement('option');
+    o.value       = s.id;
+    o.textContent = s.name + (s.ledger ? ' (' + s.ledger + ')' : '');
+    sel.appendChild(o);
+  });
+
+  if(!getSuppliers().length){
+    document.getElementById('ledgerTable').innerHTML =
+      '<tr class="empty-row"><td colspan="7">No suppliers found. Make sure you have synced data from Suppliers page.</td></tr>';
+  } else {
+    document.getElementById('ledgerTable').innerHTML =
+      '<tr class="empty-row"><td colspan="7">Select a supplier to view ledger.</td></tr>';
+  }
+}
+
+// ── Render ledger for selected supplier ───────────────────────
 function renderLedgerView(){
-  const sid=document.getElementById('ledger-supplier').value;
-  const balBox=document.getElementById('lbalBox');
-  const tbody=document.getElementById('ledgerTable');
-  const tfoot=document.getElementById('ledgerFoot');
-  if(!sid){balBox.classList.remove('show');tbody.innerHTML='<tr class="empty-row"><td colspan="7">Select a supplier to view ledger.</td></tr>';tfoot.innerHTML='';return;}
-  const sup=getSuppliers().find(s=>s.id==sid);if(!sup)return;
-  document.getElementById('ledgerTitle').textContent='Ledger — '+sup.name;
-  document.getElementById('printTitle').textContent='Supplier Ledger: '+sup.name+(sup.ledger?' | Ledger No: '+sup.ledger:'');
-  const purchases=getPurchases().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
-  const paid=getPayments().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
-  const opening=Number(sup.opening);
-  const outstanding=opening+purchases-paid;
-  document.getElementById('lb-ledger').textContent=sup.ledger||'—';
-  document.getElementById('lb-open').textContent=fmt(opening);
-  document.getElementById('lb-purch').textContent=fmt(purchases);
-  document.getElementById('lb-paid').textContent=fmt(paid);
-  document.getElementById('lb-out').textContent=fmt(outstanding);
+  const sid   = document.getElementById('ledger-supplier').value;
+  const balBox = document.getElementById('lbalBox');
+  const tbody  = document.getElementById('ledgerTable');
+  const tfoot  = document.getElementById('ledgerFoot');
+
+  if(!sid){
+    balBox.classList.remove('show');
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Select a supplier to view ledger.</td></tr>';
+    tfoot.innerHTML = '';
+    return;
+  }
+
+  const sup = getSuppliers().find(s => s.id == sid);
+  if(!sup) return;
+
+  document.getElementById('ledgerTitle').textContent = 'Ledger — ' + sup.name;
+  document.getElementById('printTitle').textContent  =
+    'Supplier Ledger: ' + sup.name + (sup.ledger ? ' | Ledger No: ' + sup.ledger : '');
+
+  const totalPurch = getPurchases().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
+  const totalPaid  = getPayments().filter(p=>p.supplierId==sid).reduce((a,p)=>a+Number(p.amount),0);
+  const opening    = Number(sup.opening);
+  const outstanding= opening + totalPurch - totalPaid;
+
+  document.getElementById('lb-ledger').textContent = sup.ledger || '—';
+  document.getElementById('lb-open').textContent   = fmt(opening);
+  document.getElementById('lb-purch').textContent  = fmt(totalPurch);
+  document.getElementById('lb-paid').textContent   = fmt(totalPaid);
+  document.getElementById('lb-out').textContent    = fmt(outstanding);
   balBox.classList.add('show');
 
-  let rows=[];
-  if(opening!==0) rows.push({date:sup.opDate||'—',type:'Opening Balance',details:'Balance Brought Forward',debit:opening,credit:0,order:sup.opDate||'0000'});
-  getPurchases().filter(p=>p.supplierId==sid).forEach(p=>rows.push({date:p.date,type:p.type,details:(p.invoice?p.invoice+' – ':'')+(p.desc||'Purchase'),debit:Number(p.amount),credit:0,order:p.date}));
-  getPayments().filter(p=>p.supplierId==sid).forEach(p=>rows.push({date:p.date,type:'Payment ('+p.method+')',details:p.method==='Cheque'?`${p.payType}${p.chqNo?' CHQ:'+p.chqNo:''}${p.bank?' – '+p.bank:''}`:`${p.payType}${p.ref?' ('+p.ref+')':''}`,debit:0,credit:Number(p.amount),order:p.date}));
-  rows.sort((a,b)=>a.order.localeCompare(b.order));
+  // Build transaction rows
+  let rows = [];
+  if(opening !== 0)
+    rows.push({date:sup.opDate||'—', type:'Opening Balance', details:'Balance Brought Forward', debit:opening, credit:0, order:sup.opDate||'0000'});
 
-  if(!rows.length){tbody.innerHTML='<tr class="empty-row"><td colspan="7">No transactions.</td></tr>';tfoot.innerHTML='';return;}
-  let bal=0;
-  tbody.innerHTML=rows.map((r,i)=>{
-    bal+=r.debit-r.credit;
-    const bCls=bal>0?'amt-red':bal===0?'amt-green':'amt-blue';
-    const tStyle=r.type.startsWith('Payment')?'color:var(--green);font-weight:700;':r.type==='Opening Balance'?'color:var(--blue-600);font-weight:700;':'';
-    return `<tr><td>${i+1}</td><td>${r.date}</td><td style="${tStyle}">${r.type}</td><td>${r.details}</td><td>${r.debit?'<span class="amt-blue">'+fmt(r.debit)+'</span>':''}</td><td>${r.credit?'<span class="amt-green">'+fmt(r.credit)+'</span>':''}</td><td class="${bCls}"><strong>${fmt(bal)}</strong></td></tr>`;
+  getPurchases().filter(p=>p.supplierId==sid).forEach(p=>
+    rows.push({date:p.date, type:p.type||'Purchase', details:(p.invoice?p.invoice+' – ':'')+(p.desc||'Purchase'), debit:Number(p.amount), credit:0, order:p.date})
+  );
+
+  getPayments().filter(p=>p.supplierId==sid).forEach(p=>
+    rows.push({date:p.date, type:'Payment ('+p.method+')',
+      details: p.method==='Cheque'
+        ? `${p.payType||''}${p.chqNo?' CHQ:'+p.chqNo:''}${p.bank?' – '+p.bank:''}`
+        : `${p.payType||''}${p.ref?' ('+p.ref+')':''}`,
+      debit:0, credit:Number(p.amount), order:p.date})
+  );
+
+  rows.sort((a,b) => a.order.localeCompare(b.order));
+
+  if(!rows.length){
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">No transactions found.</td></tr>';
+    tfoot.innerHTML = '';
+    return;
+  }
+
+  let bal = 0;
+  tbody.innerHTML = rows.map((r, i) => {
+    bal += r.debit - r.credit;
+    const bCls   = bal > 0 ? 'amt-red' : bal === 0 ? 'amt-green' : 'amt-blue';
+    const tStyle = r.type.startsWith('Payment')
+      ? 'color:var(--green);font-weight:700;'
+      : r.type === 'Opening Balance'
+        ? 'color:var(--blue-600);font-weight:700;'
+        : '';
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${r.date}</td>
+      <td style="${tStyle}">${r.type}</td>
+      <td>${r.details}</td>
+      <td>${r.debit  ? '<span class="amt-blue">'  + fmt(r.debit)  + '</span>' : ''}</td>
+      <td>${r.credit ? '<span class="amt-green">' + fmt(r.credit) + '</span>' : ''}</td>
+      <td class="${bCls}"><strong>${fmt(bal)}</strong></td>
+    </tr>`;
   }).join('');
-  tfoot.innerHTML=`<tr><td colspan="4" style="font-weight:900;">CLOSING BALANCE</td><td class="amt-blue">${fmt(opening+purchases)}</td><td class="amt-green">${fmt(paid)}</td><td class="${outstanding>0?'amt-red':outstanding===0?'amt-green':'amt-blue'}"><strong>${fmt(outstanding)}</strong></td></tr>`;
+
+  tfoot.innerHTML = `<tr>
+    <td colspan="4" style="font-weight:900;">CLOSING BALANCE</td>
+    <td class="amt-blue">${fmt(opening + totalPurch)}</td>
+    <td class="amt-green">${fmt(totalPaid)}</td>
+    <td class="${outstanding>0?'amt-red':outstanding===0?'amt-green':'amt-blue'}"><strong>${fmt(outstanding)}</strong></td>
+  </tr>`;
 }
 
-populateLedgerSel();
+// ── Init ─────────────────────────────────────────────────────
+renderHeader('ledger.html');
+loadFromSheets();   // Auto-load data from Google Sheets on page open
 </script>
 </body>
 </html>
