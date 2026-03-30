@@ -197,8 +197,8 @@ function setSyncStatus(state, msg){
   status.textContent = msg;
 }
 
-// ── Google Sheets sync (no-cors for GitHub Pages) ────────────
-async function syncToSheets(){
+// ── Google Sheets sync (hidden iframe form POST — works from GitHub Pages) ──
+function syncToSheets(){
   setSyncStatus('syncing', 'Syncing to Google Sheets…');
   try {
     const payload = {
@@ -208,23 +208,55 @@ async function syncToSheets(){
       payments  : getPayments(),
     };
 
-    // Use no-cors mode — required when hosted on GitHub Pages / external domains.
-    // Apps Script receives the data; we cannot read the response in no-cors mode,
-    // so we optimistically mark as synced after a short delay.
-    await fetch(APPS_SCRIPT_URL, {
-      method     : 'POST',
-      mode       : 'no-cors',           // ← fixes "Failed to fetch" CORS error
-      headers    : { 'Content-Type': 'text/plain' },
-      body       : JSON.stringify(payload),
+    // Remove any old iframe/form
+    ['_syncFrame','_syncForm'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.remove();
     });
 
-    const now = new Date().toLocaleTimeString('en-LK');
-    setSyncStatus('synced', `Last synced: ${now}`);
-    toast('✅ Google Sheets sync sent!', 'ok');
+    // Hidden iframe — catches the response so no page redirect
+    const iframe = document.createElement('iframe');
+    iframe.name  = '_syncFrame';
+    iframe.id    = '_syncFrame';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
 
-  } catch(err) {
-    setSyncStatus('error', 'Sync failed: ' + err.message);
-    toast('❌ Sync failed: ' + err.message, 'err');
+    // Hidden form — posts into the iframe (bypasses CORS)
+    const form = document.createElement('form');
+    form.id     = '_syncForm';
+    form.method = 'POST';
+    form.action = APPS_SCRIPT_URL;
+    form.target = '_syncFrame';
+    form.style.display = 'none';
+
+    // Apps Script reads: e.parameter.data
+    const input = document.createElement('input');
+    input.type  = 'hidden';
+    input.name  = 'data';
+    input.value = JSON.stringify(payload);
+    form.appendChild(input);
+    document.body.appendChild(form);
+
+    // Timeout fallback
+    const timeout = setTimeout(()=>{
+      setSyncStatus('error','Sync timed out — check Apps Script deployment');
+      toast('⚠️ Sync timed out.','err');
+    }, 10000);
+
+    // iframe load = Apps Script responded = success
+    iframe.onload = function(){
+      clearTimeout(timeout);
+      const now = new Date().toLocaleTimeString('en-LK');
+      setSyncStatus('synced', `Last synced: ${now}`);
+      toast('✅ Google Sheets updated!','ok');
+      setTimeout(()=>{ form.remove(); iframe.remove(); }, 5000);
+    };
+
+    form.submit();
+
+  } catch(err){
+    setSyncStatus('error','Sync failed: ' + err.message);
+    toast('❌ Sync failed: ' + err.message,'err');
   }
 }
 
