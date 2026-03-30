@@ -184,6 +184,7 @@ render();
   position:fixed;bottom:24px;left:24px;z-index:8888;
   display:flex;flex-direction:column;align-items:flex-start;gap:8px;
 }
+.gsheet-fab.hidden{display:none !important;}
 .gsheet-btn{
   display:flex;align-items:center;gap:8px;
   padding:10px 18px;border:none;border-radius:8px;
@@ -228,7 +229,7 @@ render();
 </style>
 
 <!-- ② Paste this HTML block just before </body> -->
-<div class="gsheet-fab" id="gsheetFab">
+<div class="gsheet-fab hidden" id="gsheetFab">
   <!-- Toggle panel button -->
   <button class="gsheet-btn sync" onclick="toggleGSheetPanel()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -269,11 +270,24 @@ render();
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRrrVBzJUR1_56Lof3YKUhMTSAVQhfMteTRUtiDvhgeI-wOZVvOiEkJ2bI62MwqV-p/exec";
   // ────────────────────────────────────────────────────────────────────────
 
+  // SECRET SHORTCUT: Press Ctrl+Shift+S to show/hide the sync panel
+  // This keeps it hidden from regular users
+  let keySeq = [];
+  document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+      e.preventDefault();
+      const fab = document.getElementById('gsheetFab');
+      fab.classList.toggle('hidden');
+      if (!fab.classList.contains('hidden')) {
+        document.getElementById('gsheetPanel').classList.add('show');
+      }
+    }
+  });
+
   const LS_KEY_URL  = "mpcs_gs_url";
   const LS_KEY_LAST = "mpcs_gs_last_sync";
-  const LS_KEY_SSID = "mpcs_gs_sheet_id";
 
-  // Init
+  // Init URL field
   const storedUrl = localStorage.getItem(LS_KEY_URL) || APPS_SCRIPT_URL;
   if (storedUrl) {
     document.getElementById("gsUrl").value = storedUrl;
@@ -281,6 +295,44 @@ render();
   }
   const lastSync = localStorage.getItem(LS_KEY_LAST);
   if (lastSync) document.getElementById("gsLastSync").textContent = lastSync;
+
+  // ── AUTO-PULL FROM GOOGLE SHEETS ON LOAD ──────────────────────────────
+  // This fixes the cross-device problem: when another device opens the app,
+  // it pulls the latest data from Google Sheets into localStorage first.
+  async function pullFromSheets() {
+    const url = localStorage.getItem(LS_KEY_URL) || APPS_SCRIPT_URL;
+    if (!url) return;
+    try {
+      const resp = await fetch(url + "?action=pull", { method: "GET" });
+      if (!resp.ok) return;
+      const json = await resp.json();
+      if (!json.ok || !json.data) return;
+      // Only update if sheets data is newer / has more records
+      const d = json.data;
+      if (d.suppliers && d.suppliers.length > 0) {
+        localStorage.setItem("mpcs_suppliers", JSON.stringify(d.suppliers));
+      }
+      if (d.purchases && d.purchases.length > 0) {
+        localStorage.setItem("mpcs_purchases", JSON.stringify(d.purchases));
+      }
+      if (d.payments && d.payments.length > 0) {
+        localStorage.setItem("mpcs_payments", JSON.stringify(d.payments));
+      }
+      // Re-render the dashboard with fresh data
+      if (typeof render === 'function') render();
+      const ts = new Date().toLocaleString("en-LK");
+      localStorage.setItem(LS_KEY_LAST, ts);
+      if (document.getElementById("gsLastSync")) {
+        document.getElementById("gsLastSync").textContent = ts;
+      }
+    } catch(e) {
+      // Silent fail — don't disturb the user if pull fails
+      console.warn("Auto-pull from Sheets failed:", e.message);
+    }
+  }
+
+  // Pull latest data when page loads (fixes cross-device sync)
+  pullFromSheets();
 
   window.toggleGSheetPanel = function() {
     document.getElementById("gsheetPanel").classList.toggle("show");
@@ -295,7 +347,6 @@ render();
   };
 
   window.openSheet = function() {
-    // Open the spreadsheet — Apps Script doGet returns sheet info
     const url = document.getElementById("gsUrl").value.trim();
     if (url) window.open(url, "_blank");
   };
@@ -307,7 +358,6 @@ render();
     setBar(10);
     setStatus("Reading local data…");
 
-    // Collect all data from localStorage
     function getData(k) {
       try { return JSON.parse(localStorage.getItem("mpcs_" + k) || "[]"); }
       catch(e) { return []; }
@@ -324,20 +374,15 @@ render();
     setStatus("Connecting to Google Sheets…");
 
     try {
-      // Apps Script requires no-cors workaround — we use a form POST via fetch
       const resp = await fetch(url, {
         method  : "POST",
-        // Note: Apps Script doesn't accept application/json in no-cors mode,
-        // so we stringify into text/plain which doPost handles fine.
         headers : { "Content-Type": "text/plain" },
         body    : JSON.stringify(payload),
       });
 
       setBar(80);
-
       if (!resp.ok) throw new Error("HTTP " + resp.status);
       const json = await resp.json();
-
       if (!json.ok) throw new Error(json.error || "Unknown error");
 
       setBar(100);
@@ -348,8 +393,6 @@ render();
         `✓ Synced — ${json.suppliers} suppliers, ${json.purchases} purchases, ${json.payments} payments.`,
         "ok"
       );
-
-      // Pulse the bar back to 0 after a moment
       setTimeout(() => setBar(0), 1800);
 
     } catch(err) {
