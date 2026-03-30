@@ -90,7 +90,7 @@ select.inline-sel{border:1px solid var(--border);border-radius:4px;padding:4px 8
   <div class="sync-bar">
     <div class="sync-dot" id="syncDot"></div>
     <span id="syncStatus">Not synced yet</span>
-    <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="syncToSheets()">🔄 Sync Data</button>
+    <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="syncToSheets()">🔄 Sync to Google Sheets</button>
   </div>
 
   <div class="card">
@@ -197,7 +197,7 @@ function setSyncStatus(state, msg){
   status.textContent = msg;
 }
 
-// ── Google Sheets sync ───────────────────────────────────────
+// ── Google Sheets sync (no-cors for GitHub Pages) ────────────
 async function syncToSheets(){
   setSyncStatus('syncing', 'Syncing to Google Sheets…');
   try {
@@ -208,22 +208,19 @@ async function syncToSheets(){
       payments  : getPayments(),
     };
 
-    const res  = await fetch(APPS_SCRIPT_URL, {
-      method : 'POST',
-       mode: 'no-cors',    
-       headers: { 'Content-Type': 'text/plain' },
-      body   : JSON.stringify(payload),
+    // Use no-cors mode — required when hosted on GitHub Pages / external domains.
+    // Apps Script receives the data; we cannot read the response in no-cors mode,
+    // so we optimistically mark as synced after a short delay.
+    await fetch(APPS_SCRIPT_URL, {
+      method     : 'POST',
+      mode       : 'no-cors',           // ← fixes "Failed to fetch" CORS error
+      headers    : { 'Content-Type': 'text/plain' },
+      body       : JSON.stringify(payload),
     });
 
-    const data = await res.json();
-
-    if(data.ok){
-      const now = new Date().toLocaleTimeString('en-LK');
-      setSyncStatus('synced', `Last synced: ${now} — ${data.suppliers} suppliers, ${data.purchases} purchases, ${data.payments} payments`);
-      toast('✅ Google Sheets updated successfully!', 'ok');
-    } else {
-      throw new Error(data.error || 'Unknown error');
-    }
+    const now = new Date().toLocaleTimeString('en-LK');
+    setSyncStatus('synced', `Last synced: ${now}`);
+    toast('✅ Google Sheets sync sent!', 'ok');
 
   } catch(err) {
     setSyncStatus('error', 'Sync failed: ' + err.message);
