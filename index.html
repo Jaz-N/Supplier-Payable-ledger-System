@@ -303,20 +303,20 @@ render();
     const url = localStorage.getItem(LS_KEY_URL) || APPS_SCRIPT_URL;
     if (!url) return;
     try {
-      const resp = await fetch(url + "?action=pull", { method: "GET" });
+      // Apps Script doGet with action=read returns { ok, suppliers, purchases, payments }
+      const resp = await fetch(url + "?action=read", { method: "GET" });
       if (!resp.ok) return;
       const json = await resp.json();
-      if (!json.ok || !json.data) return;
-      // Only update if sheets data is newer / has more records
-      const d = json.data;
-      if (d.suppliers && d.suppliers.length > 0) {
-        localStorage.setItem("mpcs_suppliers", JSON.stringify(d.suppliers));
+      if (!json.ok) return;
+      // json directly contains suppliers/purchases/payments arrays
+      if (json.suppliers && json.suppliers.length > 0) {
+        localStorage.setItem("mpcs_suppliers", JSON.stringify(json.suppliers));
       }
-      if (d.purchases && d.purchases.length > 0) {
-        localStorage.setItem("mpcs_purchases", JSON.stringify(d.purchases));
+      if (json.purchases && json.purchases.length > 0) {
+        localStorage.setItem("mpcs_purchases", JSON.stringify(json.purchases));
       }
-      if (d.payments && d.payments.length > 0) {
-        localStorage.setItem("mpcs_payments", JSON.stringify(d.payments));
+      if (json.payments && json.payments.length > 0) {
+        localStorage.setItem("mpcs_payments", JSON.stringify(json.payments));
       }
       // Re-render the dashboard with fresh data
       if (typeof render === 'function') render();
