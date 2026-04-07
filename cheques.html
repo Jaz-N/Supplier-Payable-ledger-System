@@ -165,8 +165,8 @@ function renderChqTable(){
   tbody.innerHTML=[...cheques].reverse().map((c,i)=>`<tr>
     <td>${cheques.length-i}</td>
     <td><strong>${c.chqNo||'—'}</strong></td>
-    <td>${c.chqDate||'—'}</td>
-    <td>${c.date}</td>
+    <td>${fmtDate(c.chqDate)||'—'}</td>
+    <td>${fmtDate(c.date)}</td>
     <td>${c.supplier}</td>
     <td>${c.bank||'—'}</td>
     <td class="amt-blue">${fmt(c.amount)}</td>
