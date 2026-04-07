@@ -179,6 +179,7 @@ function getPayments(){return getData('payments');}
 function savePurchases(d){setData('purchases',d);}
 function fmt(n){return Number(n||0).toLocaleString('en-LK',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function todayStr(){return new Date().toISOString().split('T')[0];}
+function fmtDate(val){if(!val)return"";const d=new Date(val);return isNaN(d)?val:d.toLocaleDateString("en-LK",{year:"numeric",month:"short",day:"2-digit"});}
 function toast(msg,isErr=false){
   let t=document.getElementById('toast');
   t.textContent=msg;t.className='toast show'+(isErr?' toast-err':'');
@@ -389,7 +390,7 @@ function renderPTable(){
     const discStr=p.discountValue?`${p.discountType==='percent'?p.discountValue+'%':'LKR '+fmt(p.discountValue)}`:'—';
     return `<tr>
       <td>${purchases.length-i}</td>
-      <td>${p.date}</td>
+      <td>${fmtDate(p.date)}</td>
       <td><strong>${p.supplier}</strong></td>
       <td><span class="badge badge-blue">${p.type}</span></td>
       <td>${p.invoice||'—'}</td>
