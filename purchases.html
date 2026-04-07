@@ -62,6 +62,13 @@ tbody tr:hover{background:#deeaf8;}
 .amt-blue{color:var(--blue-600);font-weight:700;}
 .amt-red{color:var(--red);font-weight:700;}
 select.inline-sel{border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-family:'Lato',sans-serif;font-size:12px;background:var(--blue-50);}
+/* ── Sync bar ── */
+.sync-bar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--blue-50);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;color:var(--muted);margin-bottom:16px;}
+.sync-dot{width:9px;height:9px;border-radius:50%;background:#ccc;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.sync-dot.syncing{background:var(--amber);animation:pulse 1s infinite;}
+.sync-dot.synced{background:var(--green);}
+.sync-dot.error{background:var(--red);}
 </style>
 </head>
 <body>
@@ -69,6 +76,14 @@ select.inline-sel{border:1px solid var(--border);border-radius:4px;padding:4px 8
 
 <div class="page-wrap">
   <div class="page-title"><h2>🛒 Purchase Entry</h2><div class="title-line"></div></div>
+
+  <!-- ── Sync bar ── -->
+  <div class="sync-bar">
+    <div class="sync-dot" id="syncDot"></div>
+    <span id="syncStatus">Not synced yet</span>
+    <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="syncToSheets()">🔄 Sync to Sheets</button>
+  </div>
+
   <div class="card">
     <div class="card-title" id="formTitle">New Purchase Entry</div>
     <div class="form-grid">
@@ -139,6 +154,7 @@ select.inline-sel{border:1px solid var(--border);border-radius:4px;padding:4px 8
 const COMPANY="Vali East Northern Division MPCS Ltd";
 const ADDRESS="Point Pedro Road, Avarankal, Puttur, Atchuvely";
 const LOGO_URL="images (1).jfif";
+const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwRrrVBzJUR1_56Lof3YKUhMTSAVQhfMteTRUtiDvhgeI-wOZVvOiEkJ2bI62MwqV-p/exec";
 const PAGES=[
   {file:"index.html",label:"Dashboard",icon:"⊞"},
   {file:"suppliers.html",label:"Suppliers",icon:"👤"},
@@ -167,6 +183,77 @@ function toast(msg,isErr=false){
   let t=document.getElementById('toast');
   t.textContent=msg;t.className='toast show'+(isErr?' toast-err':'');
   clearTimeout(t._tid);t._tid=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ── Sync status helper ────────────────────────────────────────
+function setSyncStatus(state, msg){
+  const dot    = document.getElementById('syncDot');
+  const status = document.getElementById('syncStatus');
+  dot.className = 'sync-dot ' + state;
+  status.textContent = msg;
+}
+
+// ── Google Sheets sync (hidden iframe form POST) ──────────────
+function syncToSheets(){
+  setSyncStatus('syncing', 'Syncing to Google Sheets…');
+  try {
+    const payload = {
+      action    : 'sync',
+      suppliers : getSuppliers(),
+      purchases : getPurchases(),
+      payments  : getPayments(),
+    };
+
+    ['_syncFrame','_syncForm'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.remove();
+    });
+
+    const iframe = document.createElement('iframe');
+    iframe.name  = '_syncFrame';
+    iframe.id    = '_syncFrame';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    const form = document.createElement('form');
+    form.id     = '_syncForm';
+    form.method = 'POST';
+    form.action = APPS_SCRIPT_URL;
+    form.target = '_syncFrame';
+    form.style.display = 'none';
+
+    const input = document.createElement('input');
+    input.type  = 'hidden';
+    input.name  = 'data';
+    input.value = JSON.stringify(payload);
+    form.appendChild(input);
+    document.body.appendChild(form);
+
+    const timeout = setTimeout(()=>{
+      setSyncStatus('error','Sync timed out — check Apps Script deployment');
+      toast('⚠️ Sync timed out.', true);
+    }, 10000);
+
+    iframe.onload = function(){
+      clearTimeout(timeout);
+      const now = new Date().toLocaleTimeString('en-LK');
+      setSyncStatus('synced', `Last synced: ${now}`);
+      toast('✅ Google Sheets updated!');
+      setTimeout(()=>{ form.remove(); iframe.remove(); }, 5000);
+    };
+
+    form.submit();
+
+  } catch(err){
+    setSyncStatus('error','Sync failed: ' + err.message);
+    toast('❌ Sync failed: ' + err.message, true);
+  }
+}
+
+// ── Auto-sync after every save / delete ──────────────────────
+function autoSync(){
+  setSyncStatus('syncing','Auto-syncing…');
+  syncToSheets();
 }
 
 renderHeader('purchases.html');
@@ -238,7 +325,10 @@ function savePurchaseForm(){
     purchases.push(obj);
     toast('Purchase saved successfully.');
   }
-  savePurchases(purchases);renderPTable();cancelEdit();
+  savePurchases(purchases);
+  renderPTable();
+  cancelEdit();
+  autoSync(); // ← sync to Google Sheets
 }
 
 function editPurchase(id){
@@ -278,7 +368,10 @@ function cancelEdit(){
 
 function deletePurchaseRow(id){
   if(!confirm('Delete this purchase entry?'))return;
-  savePurchases(getPurchases().filter(p=>p.id!==id));renderPTable();toast('Purchase deleted.');
+  savePurchases(getPurchases().filter(p=>p.id!==id));
+  renderPTable();
+  toast('Purchase deleted.');
+  autoSync(); // ← sync to Google Sheets
 }
 
 function renderPTable(){
