@@ -171,6 +171,7 @@ function getPayments(){return getData('payments');}
 function savePayments(d){setData('payments',d);}
 function fmt(n){return Number(n||0).toLocaleString('en-LK',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function todayStr(){return new Date().toISOString().split('T')[0];}
+function fmtDate(val){if(!val)return"";const d=new Date(val);return isNaN(d)?val:d.toLocaleDateString("en-LK",{year:"numeric",month:"short",day:"2-digit"});}
 function getSupplierBalance(sid){
   const sup=getSuppliers().find(s=>s.id==sid);
   if(!sup)return{opening:0,purchases:0,paid:0,outstanding:0};
@@ -386,7 +387,7 @@ function renderPayTable(){
   if(!pays.length){tbody.innerHTML='<tr class="empty-row"><td colspan="10">No payments yet.</td></tr>';return;}
   tbody.innerHTML=[...pays].reverse().map((p,i)=>`<tr>
     <td>${pays.length-i}</td>
-    <td>${p.date}</td>
+    <td>${fmtDate(p.date)}</td>
     <td><strong>${p.supplier}</strong></td>
     <td><span class="badge badge-blue">${p.payType}</span></td>
     <td><span class="badge ${p.method==='Cheque'?'badge-issued':'badge-settled'}">${p.method}</span></td>
